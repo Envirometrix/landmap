@@ -77,10 +77,10 @@ which shows that the Cross Validation R-square is about 55%. Next we can generat
 meuse.lead <- predict(m)
 ```
 
-![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png =550x) *Figure: Predicted lead content for the Meuse data set. Model error is derived as weighted standard deviation from multiple model predictions.*
+![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png) *Figure: Predicted lead content for the Meuse data set. Model error is derived as weighted standard deviation from multiple model predictions.*
 
 Notice that the predictions reflect spatial correlation between values, and hence can be used
-as a possible replacement for kriging methods (read more in [Hengl et al. 2018](https://doi.org/10.7717/peerj.5518)). Automation comes, however, at the high computing and RAM usage costs.
+as a possible replacement for kriging methods ([Hengl et al. 2018](https://doi.org/10.7717/peerj.5518)). Automation comes, however, at the high computing and RAM usage costs.
 
 In the following example we use somewhat larger data set from the SIC1997 exercise.
 
@@ -158,7 +158,7 @@ swiss1km.ll1km$clay_10..10cm <- ifelse(is.na(swiss1km.ll1km$DEM), NA, swiss1km.l
 mapview(swiss1km.ll1km["clay_10..10cm"])
 ```
 
-![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/rainfall/Fig_download_LandGIS_swiss1km.jpg =650x) *Figure: Clay content map for Switzerland.*
+![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/rainfall/Fig_download_LandGIS_swiss1km.jpg) *Figure: Clay content map for Switzerland.*
 
 This takes few steps because you have to determine:
 
