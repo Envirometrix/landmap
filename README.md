@@ -1,6 +1,6 @@
 # landmap package for R
 
-Provides methodology for automated mapping i.e. spatial interpolation and/or 
+Package provides methodology for automated mapping i.e. spatial interpolation and/or 
 prediction using Ensemble Machine Learning (extends functionality of the 
 [subsemble](https://github.com/ledell/subsemble) and the [SuperLearner](https://github.com/ecpolley/SuperLearner) packages). Key functionality includes:
 
@@ -9,6 +9,8 @@ prediction using Ensemble Machine Learning (extends functionality of the
 * `spc` --- derive Principal Components using stack of spatial layers,
 * `tile` --- tile spatial layers so they can be used to run processing in parallel,
 * `download.landgis` --- access and download LandGIS layers from www.openlandmap.org,
+
+Most of functions are optimized to run in parallel by default. This might result in high RAM and CPU usage.
 
 Spatial prediction using Ensemble Machine Learning methodology is explained in 
 detail in:
@@ -28,6 +30,8 @@ Install development versions from github:
 library(devtools)
 install_github("envirometrix/landmap")
 ```
+
+Under construction. Use for testing purposes only.
 
 ## Functionality
 
@@ -73,7 +77,7 @@ which shows that the Cross Validation R-square is about 55%. Next we can generat
 meuse.lead <- predict(m)
 ```
 
-![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png) *Figure: Predicted lead content for the Meuse data set.*
+![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png =550x) *Figure: Predicted lead content for the Meuse data set. Model error is derived as weighted standard deviation from multiple model predictions.*
 
 Notice that the predictions reflect spatial correlation between values, and hence can be used
 as a possible replacement for kriging methods (read more in [Hengl et al. 2018](https://doi.org/10.7717/peerj.5518)). Automation comes, however, at the high computing and RAM usage costs.
@@ -154,9 +158,9 @@ swiss1km.ll1km$clay_10..10cm <- ifelse(is.na(swiss1km.ll1km$DEM), NA, swiss1km.l
 mapview(swiss1km.ll1km["clay_10..10cm"])
 ```
 
-![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/rainfall/Fig_download_LandGIS_swiss1km.jpg) *Figure: Clay content map for Switzerland.*
+![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/rainfall/Fig_download_LandGIS_swiss1km.jpg =650x) *Figure: Clay content map for Switzerland.*
 
-This takes few steps because we have to determine:
+This takes few steps because you have to determine:
 
 * bounding box,
 * scaling factor,
@@ -167,5 +171,5 @@ For accessing and using global layers larger than 1GB we recommend directly down
 
 ## Contributions
 
-* Contributions to landmap are most welcome. Issues and pull requests are the preferred ways of sharing them.
+* Contributions to landmap are welcome. Issues and pull requests are the preferred ways of sharing them.
 * We are interested in results and experiences of using the train.spLearner function for generating spatial predictions with your own data sets.
