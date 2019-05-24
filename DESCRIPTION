@@ -1,0 +1,32 @@
+Package: landmap
+Title: Automated Spatial Interpolation and/or Prediction using Ensemble Machine Learning
+Version: 0.0.0.9000
+Authors@R: person("Tomislav", "Hengl", email = "tom.hengl@opengeohub.org", role = c("aut", "cre"))
+Description: Functions and tools for spatial interpolation and/or prediction of environmental variables (points to grids) 
+   based on using Ensemble Machine Learning with geographical distances. Package also provides access to Global 
+   Environmental Layers produced by the OpenGeoHub.org foundation and collaborators. Some functions are adoptation of the GSIF
+   (Global Soil Information Facilities) package functionality.
+Depends: R (>= 3.5.1)
+License: GPL-2 | MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/envirometrix/landmap/
+BugReports: https://github.com/envirometrix/landmap/issues/
+Imports: 
+    subsemble,
+    parallel,
+    fossil,
+    geoR,
+    matrixStats,
+    ranger,
+    nnet,
+    e1071,
+    spatstat,
+    maptools,
+    maxlike,
+    mda,
+    psych
+Suggests: rjson, RCurl, soiltexture, caret, xgboost, snowfall
+RoxygenNote: 6.1.1
+SystemRequirements: C++11, GDAL (>= 2.0.1), GEOS (>= 3.4.0),
+    PROJ (>= 4.8.0)

@@ -1,0 +1,51 @@
+#' Derive buffer distances for a list of points
+#'
+#' @description Derive buffer distances using the \code{raster::distance} function, so that these can be used as predictors for spatial prediction i.e. to account for spatial proximity to low, medium and high values.
+#'
+#' @param observations SpatialPointsDataFrame.
+#' @param predictionDomain SpatialPixelsDataFrame.
+#'
+#' @return object of class SpatialPixelsDataFrame
+#' @export
+#'
+#' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#'
+#' @examples
+setMethod("buffer.dist", signature(observations = "SpatialPointsDataFrame", predictionDomain = "SpatialPixelsDataFrame"), function(observations, predictionDomain, classes, width, parallel=TRUE, ...){
+
+  ## check classes
+  if(missing(width)){ width <- sqrt(areaSpatialGrid(predictionDomain)) }
+  if(!length(classes)==length(observations)){ stop("Length of 'observations' and 'classes' does not match.") }
+  ## remove classes without any points:
+  xg <- summary(classes, maxsum=length(levels(classes)))
+  selg.levs = attr(xg, "names")[xg > 0]
+  if(length(selg.levs)<length(levels(classes))){
+    fclasses <- as.factor(classes)
+    fclasses[which(!fclasses %in% selg.levs)] <- NA
+    classes <- droplevels(fclasses)
+  }
+  ## subset to points within the area
+  r.sel <- complete.cases(sp::over(observations, predictionDomain))
+  if(sum(r.sel)<nrow(observations)){
+    observations <- observations[r.sel,]
+    classes <- classes[r.sel]
+    classes <- droplevels(classes)
+  }
+  ## derive buffer distances
+  if(parallel==TRUE){
+    s <- parallel::mclapply(1:length(levels(classes)), function(i){ raster::distance(raster::rasterize(observations[which(classes==levels(classes)[i]),1]@coords, y=raster::raster(predictionDomain)), width=width, ...) }, mc.cores = parallel::detectCores())
+  } else {
+    s <- list(NULL)
+    for(i in 1:length(levels(classes))){
+      s[[i]] <- raster::distance(raster::rasterize(observations[which(classes==levels(classes)[i]),1]@coords, y=raster::raster(predictionDomain)), width=width, ...)
+    }
+  }
+
+  ## remove empty slots
+  s <- s[sapply(s, function(x){!is.null(x)})]
+  s <- raster::brick(s)
+  s <- as(s, "SpatialPixelsDataFrame")
+  s <- s[predictionDomain@grid.index,]
+  return(s)
+
+})

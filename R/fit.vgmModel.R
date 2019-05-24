@@ -1,0 +1,116 @@
+#' Fit variogram using point data
+#'
+#' @param formulaString.vgm formula.
+#' @param rmatrix data.frame.
+#' @param predictionDomain SpatialPixelsDataFrame.
+#'
+#' @return
+#' @export
+#'
+#' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#'
+#' @note Extends variogram fitting functionality from the geoR package.
+#' Can be used for 2D or 3D point data sets, with and without trend variables.
+#'
+#' @examples
+setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "data.frame", predictionDomain = "SpatialPixelsDataFrame"), function(formulaString.vgm, rmatrix, predictionDomain, cov.model = "exponential", dimensions = list("2D", "3D", "2D+T", "3D+T"), lambda = 0.5, psiR = NULL, subsample = nrow(rmatrix), ini.var, ini.range, fix.psiA = FALSE, fix.psiR = FALSE, ...){
+
+  if(missing(dimensions)){ dimensions <- dimensions[[1]] }
+  if(is.na(proj4string(predictionDomain))){ stop("proj4 string required for argument 'predictionDomain'") }
+  if(!any(names(rmatrix) %in% all.vars(formulaString.vgm))){
+    stop("Variables in the 'formulaString.vgm' not found in the 'rmatrix' object.")
+  }
+  ## variable names:
+  tv <- all.vars(formulaString.vgm)[1]
+  if(!is.numeric(rmatrix[,tv])){ stop("Numeric variable expected for 'fit.vgmModel'") }
+  if(length(all.vars(formulaString.vgm))>1){
+    tcovs <- as.formula(paste(" ~ ", paste(all.vars(formulaString.vgm)[-1], collapse = "+")))
+  }
+  sel.r <- complete.cases(lapply(all.vars(formulaString.vgm), function(x){rmatrix[,x]}))
+  if(!sum(sel.r)==nrow(rmatrix)){ rmatrix <- rmatrix[sel.r,] }
+  ## spatial coordinates (column names):
+  xyn <- attr(predictionDomain@bbox, "dimnames")[[1]]
+  if(!any(names(rmatrix) %in% xyn)){
+       stop(paste("Column names:", paste(xyn[which(!(xyn %in% names(rmatrix)))], collapse=", "), "could not be located in the regression matrix"))
+  }
+  ## add 3D dimension if missing:
+  if(dimensions=="3D" & length(xyn)==2){
+    xyn <- c(xyn, "altitude")
+  }
+  ## create spatial points:
+  coordinates(rmatrix) <- as.formula(paste("~", paste(xyn, collapse = "+"), sep=""))
+  proj4string(rmatrix) <- predictionDomain@proj4string
+  points <- rmatrix
+  ## subset to speed up the computing:
+  if(subsample < nrow(rmatrix)){
+    pcnt <- subsample/nrow(rmatrix)
+    message(paste0("Subsetting observations to ", signif(pcnt*100, 1), "%..."))
+    rmatrix <- rmatrix[runif(nrow(rmatrix))<pcnt,]
+  }
+  x.geo <- geoR::as.geodata(rmatrix[,tv])
+  if(length(all.vars(formulaString.vgm))>1){
+    x.geo$covariate <- rmatrix@data[,all.vars(formulaString.vgm)[-1]]
+  }
+  if(!cov.model == "nugget"){
+    ## guess the dimensions:
+    if(missing(dimensions)){
+        xyn = attr(rmatrix@bbox, "dimnames")[[1]]
+        if(length(xyn)==2) {
+           dimensions = "2D"
+        } else {
+           dimensions = "3D"
+        }
+    }
+    if(dimensions == "3D"){
+      ## estimate area extent:
+      ini.range = sqrt(areaSpatialGrid(predictionDomain))/3
+      ## estimate anisotropy:
+      if(is.null(psiR)){
+        ## estimate initial range in the vertical direction:
+        dr <- abs(diff(range(rmatrix@coords[,3], na.rm=TRUE)))/3
+        psiR <- 2*dr/ini.range
+      }
+    }
+    if(dimensions == "2D"){
+      diag <- (sqrt((rmatrix@bbox[1,2]-rmatrix@bbox[1,1])**2+(rmatrix@bbox[2,2]-rmatrix@bbox[2,1])**2))/3
+      ## check if it is projected object:
+      if(!is.na(proj4string(predictionDomain))){
+        if(!is.projected(predictionDomain)){
+          if(requireNamespace("fossil", quietly = TRUE)){
+            ## Haversine Formula for Great Circle distance
+            p.1 <- matrix(c(predictionDomain@bbox[1,1], predictionDomain@bbox[1,2]), ncol=2, dimnames=list(1,c("lon","lat")))
+            p.2 <- matrix(c(predictionDomain@bbox[2,1], predictionDomain@bbox[2,2]), ncol=2, dimnames=list(1,c("lon","lat")))
+            ini.range = fossil::deg.dist(lat1=p.1[,2], long1=p.1[,1], lat2=p.2[,2], long2=p.2[,1])/2
+          }
+        } else {
+          ini.range <- sqrt(sp::areaSpatialGrid(predictionDomain))/3
+        }
+      } else {
+        ini.range = diag/3
+      }
+    }
+    ## initial variogram:
+    if(lambda==1){
+      ini.var <- var(log1p(x.geo$data), na.rm = TRUE)
+    } else {
+      ini.var <- var(x.geo$data, na.rm = TRUE)
+    }
+    ## fit sample variogram:
+    if(length(all.vars(formulaString.vgm))==1){
+      try( rvgm <- likfit(x.geo, lambda = lambda, messages = FALSE, ini = c(ini.var, ini.range), cov.model = cov.model) )
+      message("Fitting a variogram using 'linkfit'...", immediate. = TRUE)
+    } else {
+      try( rvgm <- likfit(x.geo, lambda = lambda, messages = FALSE, trend = tcovs, ini = c(ini.var, ini.range), fix.psiA = FALSE, fix.psiR = FALSE, cov.model = cov.model) )
+      message("Fitting a variogram using 'linkfit' and trend model...", immediate. = TRUE)
+    }
+    if(class(.Last.value)[1]=="try-error"){
+      warning("Variogram model could not be fitted.")
+    }
+    if(any(!(c("practicalRange", "cov.model") %in% names(rvgm)))){
+      rvgm <- list(cov.model="nugget", lambda=lambda, practicalRange=ini.range)
+    }
+  } else {
+    rvgm <- list(cov.model="nugget", lambda=lambda, practicalRange=NA)
+  }
+  return(list(vgm=rvgm, observations=points))
+})
