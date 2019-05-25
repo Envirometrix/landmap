@@ -4,8 +4,8 @@ Version: 0.0.0.9000
 Authors@R: person("Tomislav", "Hengl", email = "tom.hengl@opengeohub.org", role = c("aut", "cre"))
 Description: Functions and tools for spatial interpolation and/or prediction of environmental variables (points to grids) 
    based on using Ensemble Machine Learning with geographical distances. Package also provides access to Global 
-   Environmental Layers produced by the OpenGeoHub.org foundation and collaborators. Some functions are adoptation of the GSIF
-   (Global Soil Information Facilities) package functionality.
+   Environmental Layers produced by the OpenGeoHub.org foundation and collaborators. Some functions have been migrated and adopted from the GSIF
+   (Global Soil Information Facilities) package.
 Depends: R (>= 3.5.1)
 License: GPL-2 | MIT + file LICENSE
 Encoding: UTF-8

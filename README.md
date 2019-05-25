@@ -4,16 +4,16 @@ Package provides methodology for automated mapping i.e. spatial interpolation an
 prediction using Ensemble Machine Learning (extends functionality of the 
 [subsemble](https://github.com/ledell/subsemble) and the [SuperLearner](https://github.com/ecpolley/SuperLearner) packages). Key functionality includes:
 
-* `train.spLearner` --- train a spatial prediction and/or interpolation model using Ensemble Machine Learning,
+* `train.spLearner` --- train a spatial prediction and/or interpolation model using Ensemble Machine Learning (works with numeric, binomial and factor-type variables),
 * `buffer.dist` --- derive buffer (geographical) distances that can be used as covariates in spLearner, 
 * `spc` --- derive Principal Components using stack of spatial layers,
 * `tile` --- tile spatial layers so they can be used to run processing in parallel,
 * `download.landgis` --- access and download LandGIS layers from www.openlandmap.org,
 
-Most of functions are optimized to run in parallel by default. This might result in high RAM and CPU usage.
+Warning: most of functions are optimized to run in parallel by default. This might result in high RAM and CPU usage.
 
-Spatial prediction using Ensemble Machine Learning methodology is explained in 
-detail in:
+Spatial prediction using [Ensemble Machine Learning](https://koalaverse.github.io/machine-learning-in-R/stacking.html#stacking-software-in-r) with geographical distances 
+is explained in detail in:
 
 - Hengl, T., MacMillan, R.A., (2019). 
    [Predictive Soil Mapping with R](https://soilmapper.org/soilmapping-using-mla.html). 
@@ -63,8 +63,8 @@ Loading required package: parallel
 ```
 
 Note that the variogram model is only fitted to estimate effective range of spatial dependence.
-Spatial Prediction models are based only on fitting the Ensemble Machine Learning 
-(by default uses `c("SL.xgboost", "SL.ranger", "SL.ksvm")`) with geographical distances 
+Spatial Prediction models are based only on fitting the [Ensemble Machine Learning](https://koalaverse.github.io/machine-learning-in-R/stacking.html#stacking-software-in-r) 
+(by default landmap uses `c("SL.xgboost", "SL.ranger", "SL.ksvm")`) with geographical distances 
 as additional covariates. To check modelling success we can look at the summary model properties:
 
 ```r
@@ -79,8 +79,11 @@ meuse.lead <- predict(m)
 
 ![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png) *Figure: Predicted lead content for the Meuse data set. Model error is derived as weighted standard deviation from multiple model predictions.*
 
-Notice that the predictions reflect spatial correlation between values, and hence can be used
-as a possible replacement for kriging methods ([Hengl et al. 2018](https://doi.org/10.7717/peerj.5518)). Automation comes, however, at the high computing and RAM usage costs.
+![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/meuse_lead_ensemble.gif) *Figure: 9 models (random forest, SVM and Xgboost) used to derive ensemble prediction from above.*
+
+Notice that the predictions also incorporate spatial correlation between values, 
+and hence can be used as a possible replacement for kriging methods ([Hengl et al. 2018](https://doi.org/10.7717/peerj.5518)). 
+Automation comes, however, at the high computing and RAM usage costs.
 
 In the following example we use somewhat larger data set from the SIC1997 exercise.
 
@@ -92,7 +95,7 @@ rainfall1km <- predict(mR)
 
 The processing is much more computational because the data set consists from 467 points.
 This will make the regression matrix becoming extensive, and also 5x3 models need to be fitted.
-At the moment we do not recommend using `train.spLearner` for point data set with >1000 points.
+At the moment, using `train.spLearner` for point data set with >>1000 points is not recommended.
 
 The final results also shows quite similar results to universal kriging in geoR.
 The model error map, however, shows more spatial contrast and helps detect areas of 
@@ -100,7 +103,7 @@ especially high errors.
 
 ![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/rainfall/Fig_SIC1997_EML.png) *Figure: Predicted daily rainfall for the SIC1997 data set.*
 
-The same function can also be used to interpolate facto-type variables:
+The same function can also be used to interpolate factor-type variables:
 
 ```r
 library(plotKML)
@@ -172,4 +175,6 @@ For accessing and using global layers larger than 1GB we recommend directly down
 ## Contributions
 
 * Contributions to landmap are welcome. Issues and pull requests are the preferred ways of sharing them.
-* We are interested in results and experiences of using the train.spLearner function for generating spatial predictions with your own data sets.
+* We are interested in results and experiences of using the train.spLearner function 
+  for generating spatial predictions with your own data sets. Share your data sets, 
+  code and results either using github issues and/or R-sig-geo mailing list. 
