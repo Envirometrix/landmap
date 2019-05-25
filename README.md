@@ -77,9 +77,11 @@ which shows that the Cross Validation R-square is about 55%. Next we can generat
 meuse.lead <- predict(m)
 ```
 
-![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png | width=750) *Figure: Predicted lead content for the Meuse data set. Model error is derived as weighted standard deviation from multiple model predictions.*
+![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png) *Figure: Predicted lead content for the Meuse data set. Model error is derived as weighted standard deviation from multiple model predictions.*
 
-![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/meuse_lead_ensemble.gif | width=550) *Figure: 9 models (random forest, SVM and Xgboost) used to derive ensemble prediction from above.*
+Animated predictions by 9 models (random forest, SVM and Xgboost) look like this:
+
+<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/meuse_lead_ensemble.gif" width="550" />
 
 Notice that the predictions also incorporate spatial correlation between values, 
 and hence can be used as a possible replacement for kriging methods ([Hengl et al. 2018](https://doi.org/10.7717/peerj.5518)). 
