@@ -81,7 +81,7 @@ meuse.lead <- predict(m)
 
 Animated predictions by 9 models (random forest, SVM and Xgboost) look like this:
 
-<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/meuse_lead_ensemble.gif" width="550" />
+<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/meuse_lead_ensemble.gif" width="400" />
 
 Notice that the predictions also incorporate spatial correlation between values, 
 and hence can be used as a possible replacement for kriging methods ([Hengl et al. 2018](https://doi.org/10.7717/peerj.5518)). 
