@@ -79,7 +79,8 @@ meuse.lead <- predict(m)
 
 ![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png) *Figure: Predicted lead content for the Meuse data set. Model error is derived as weighted standard deviation from multiple model predictions.*
 
-Animated predictions by 9 models (random forest, SVM and Xgboost) look like this:
+Animated predictions by 9 models (3x independently fitted random forest, SVM and Xgboost) looks like this 
+(the coefficients are beta coefficients from the metalearner fit: the higher the coefficient, more important the model for the ensemble merge):
 
 <img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/meuse_lead_ensemble.gif" width="400" />
 
