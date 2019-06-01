@@ -1,4 +1,5 @@
 .train.spLearner.ov <- function(observations, formulaString, covariates, SL.library, family = gaussian(), subsets = 3, cvControl = list(V=5), lambda = 0.5, cov.model = "exponential", subsample = 5000, parallel = "multicore", cell.size, id,  ...){
+  if(!.Platform$OS.type=="unix") { parallel <- "seq" }
   tv <- all.vars(formulaString)[1]
   Y <- observations[,tv]
   if(missing(SL.library)){
@@ -92,7 +93,6 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' library(subsemble)
 #' demo(meuse, echo=FALSE)
 #' m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 1, cov.model = "nugget")
-#' print(m)
 #' meuse.lead <- predict(m)
 #' plot(raster(meuse.lead$pred["model"]), col=R_pal[["rainbow_75"]][4:20], main="spLearner", axes=FALSE, box=FALSE)
 #' points(meuse, pch="+")
@@ -102,7 +102,6 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' ## SIC1997
 #' data("sic1997")
 #' mR <- train.spLearner(sic1997$daily.rainfall, covariates=sic1997$swiss1km[c("CHELSA_rainfall","DEM")], lambda=1)
-#' print(mR)
 #' rainfall1km <- predict(mR)
 #' par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
 #' plot(raster(rainfall1km$pred["model"]), col=R_pal[["rainbow_75"]][4:20], main="spLearner", axes=FALSE, box=FALSE)
