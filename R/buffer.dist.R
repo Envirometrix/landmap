@@ -32,7 +32,7 @@ setMethod("buffer.dist", signature(observations = "SpatialPointsDataFrame", pred
     classes <- droplevels(classes)
   }
   ## derive buffer distances
-  if(parallel==TRUE){
+  if(parallel==TRUE & .Platform$OS.type=="unix"){
     s <- parallel::mclapply(1:length(levels(classes)), function(i){ raster::distance(raster::rasterize(observations[which(classes==levels(classes)[i]),1]@coords, y=raster::raster(predictionDomain)), width=width, ...) }, mc.cores = parallel::detectCores())
   } else {
     s <- list(NULL)
