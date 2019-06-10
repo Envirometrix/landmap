@@ -55,7 +55,8 @@ spplot(meuse.soil$pred[grep("error.", names(meuse.soil$pred))], col=rev(bpy.colo
 \dontrun{
 ## SIC1997
 data("sic1997")
-mR <- train.spLearner(sic1997$daily.rainfall, covariates=sic1997$swiss1km[c("CHELSA_rainfall","DEM")], lambda=1)
+X <- sic1997$swiss1km[c("CHELSA_rainfall","DEM")]
+mR <- train.spLearner(sic1997$daily.rainfall, covariates=X, lambda=1)
 rainfall1km <- predict(mR)
 par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
 plot(raster(rainfall1km$pred["model"]), col=R_pal[["rainbow_75"]][4:20], main="spLearner", axes=FALSE, box=FALSE)
@@ -77,6 +78,10 @@ summary(eberg$TAXGRSC)
 eberg$Parabraunerde <- ifelse(eberg$TAXGRSC=="Parabraunerde", 1, 0)
 X <- eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")]
 mB <- train.spLearner(eberg["Parabraunerde"], covariates=X, family=binomial(), cov.model = "nugget")
+eberg.Parabraunerde <- predict(mB)
+plot(raster(eberg.Parabraunerde$pred["prob.1"]), col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
+points(eberg["Parabraunerde"], pch="+")
+
 ## Factor variable:
 data(eberg)
 coordinates(eberg) <- ~X+Y

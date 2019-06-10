@@ -37,7 +37,7 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
   xyn <- attr(covariates@bbox, "dimnames")[[1]]
   if(missing(SL.library)){
     if(is.numeric(Y) & family$family == "gaussian"){
-      SL.library <- c("regr.xgboost", "regr.ranger", "regr.ksvm")
+      SL.library <- c("regr.xgboost", "regr.ranger", "regr.ksvm", "regr.glmnet")
       if(missing(predict.type)){ predict.type <- "response" }
     }
     if(is.factor(Y) | family$family == "binomial"){
@@ -72,7 +72,7 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
     }
   }
   ## spatial ID for CV:
-  if(missing(id)){
+  if(is.null(id)){
     grd <- sp::GridTopology(cellcentre.offset=covariates@bbox[,1], cellsize=rep(cell.size,2), cells.dim=c(ceiling(abs(diff(covariates@bbox[1,])/cell.size)), ncols=ceiling(abs(diff(covariates@bbox[2,])/cell.size))))
     r.sp <- sp::SpatialGridDataFrame(grd, proj4string = covariates@proj4string, data=data.frame(gid=1:(grd@cells.dim[1] * grd@cells.dim[2])))
     id <- sp::over(sp::SpatialPoints(observations[,attr(covariates@bbox, "dimnames")[[1]]], proj4string = covariates@proj4string), r.sp)$gid
@@ -95,7 +95,7 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
     message("Fitting a spatial learner using 'mlr::makeRegrTask'...", immediate. = TRUE)
     tsk <- mlr::makeRegrTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn], blocking = id[which(r.sel)])
     lrns <- lapply(SL.library, mlr::makeLearner)
-    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, resampling = makeResampleDesc(method="CV", iters = cvControl), use.feat=TRUE, ...)
+    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, resampling = mlr::makeResampleDesc(method="CV", iters = cvControl), use.feat=TRUE, ...)
   }
   m <- mlr::train(init.m, tsk)
   if(parallel=="multicore"){
@@ -150,7 +150,8 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' \dontrun{
 #' ## SIC1997
 #' data("sic1997")
-#' mR <- train.spLearner(sic1997$daily.rainfall, covariates=sic1997$swiss1km[c("CHELSA_rainfall","DEM")], lambda=1)
+#' X <- sic1997$swiss1km[c("CHELSA_rainfall","DEM")]
+#' mR <- train.spLearner(sic1997$daily.rainfall, covariates=X, lambda=1)
 #' rainfall1km <- predict(mR)
 #' par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
 #' plot(raster(rainfall1km$pred["model"]), col=R_pal[["rainbow_75"]][4:20], main="spLearner", axes=FALSE, box=FALSE)
@@ -172,6 +173,10 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' eberg$Parabraunerde <- ifelse(eberg$TAXGRSC=="Parabraunerde", 1, 0)
 #' X <- eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")]
 #' mB <- train.spLearner(eberg["Parabraunerde"], covariates=X, family=binomial(), cov.model = "nugget")
+#' eberg.Parabraunerde <- predict(mB)
+#' plot(raster(eberg.Parabraunerde$pred["prob.1"]), col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
+#' points(eberg["Parabraunerde"], pch="+")
+#'
 #' ## Factor variable:
 #' data(eberg)
 #' coordinates(eberg) <- ~X+Y
