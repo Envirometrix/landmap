@@ -133,6 +133,8 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' library(plotKML)
 #' library(raster)
 #' library(parallelMap)
+#' library(xgboost)
+#' library(kernlab)
 #' library(mlr)
 #' demo(meuse, echo=FALSE)
 #' ## Regression:

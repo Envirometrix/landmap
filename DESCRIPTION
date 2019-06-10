@@ -19,7 +19,7 @@ Imports:
     matrixStats,
     ranger,
     nnet,
-    e1071,
+    glmnet,
     spatstat,
     maptools,
     maxlike,
@@ -27,10 +27,12 @@ Imports:
     mlr,
     parallelMap,
     sp,
+    xgboost, 
+    kernlab,
     rgdal,
     raster,
     psych
-Suggests: rjson, RCurl, soiltexture, caret, xgboost, snowfall, plotKML
+Suggests: rjson, RCurl, soiltexture, caret, snowfall, plotKML
 RoxygenNote: 6.1.1
 SystemRequirements: C++11, GDAL (>= 2.0.1), GEOS (>= 3.4.0),
     PROJ (>= 4.8.0)
