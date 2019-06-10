@@ -92,17 +92,16 @@ In the following example we use somewhat larger data set from the SIC1997 exerci
 
 ```r
 data("sic1997")
-mR <- train.spLearner(sic1997$daily.rainfall, covariates=sic1997$swiss1km[c("CHELSA_rainfall","DEM")], lambda=1)
+X <- sic1997$swiss1km[c("CHELSA_rainfall","DEM")]
+mR <- train.spLearner(sic1997$daily.rainfall, covariates=X, lambda=1)
 rainfall1km <- predict(mR)
 ```
 
-The processing is much more computational because the data set consists from 467 points.
+The processing is now much more computational because the data set consists from 467 points (hence 467 buffer distance maps need to be produced).
 This will make the regression matrix becoming extensive, and also 5x3 models need to be fitted.
 At the moment, using `train.spLearner` for point data set with >>1000 points should be done with caution.
 
-The final results also shows quite similar results to universal kriging in [geoR](http://leg.ufpr.br/~paulojus/geoR/).
-The model error map, however, shows more spatial contrast and helps detect areas of 
-especially high errors.
+The final results also shows quite similar results to universal kriging in [geoR](http://leg.ufpr.br/~paulojus/geoR/). The model error map above, however, shows more spatial contrast and helps detect areas of especially high errors.
 
 ![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/rainfall/Fig_SIC1997_EML.png) *Figure: Predicted daily rainfall for the SIC1997 data set.*
 
@@ -126,7 +125,7 @@ TAXGRSC <- predict(mF)
 Note that in the case of factor variables, prediction are based on ensemble stacking
 based on the following three classification algorithms `c("classif.ranger", "classif.multinom", "classif.svm")`. See mlr documentation on how to add additional [learners](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html).
 
-Package mlr is provides a comprehensive environment for Machine Learning:
+In summary: package mlr provides a comprehensive environment for Machine Learning:
 
 - Ensemble predictions are based on the `mlr::makeStackedLearner` function,
 - Additional [learners](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html) can be added,
