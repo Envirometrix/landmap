@@ -13,10 +13,10 @@
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
 #'
 #' @examples
-#' search.landgis(pattern=c("clay", "10..10cm"))
 #' library(plotKML)
 #' library(rgdal)
 #' data("sic1997")
+#' search.landgis(pattern=c("clay", "10..10cm"))
 #' search.landgis(pattern=c("clay", "10..10cm"))
 #' \dontrun{
 #' coverageId = "predicted250m:sol_clay.wfraction_usda.3a1a1a_m_250m_b10..10cm_1950..2017_v0.2"
@@ -48,6 +48,16 @@ download.landgis <- function(coverageId, filename, scalefactor=NULL, subset=NULL
   }
 }
 
+#' Search for available landgis layers
+#'
+#' @param pattern
+#' @param layersURL
+#' @param update
+#'
+#' @return
+#' @export
+#'
+#' @examples
 search.landgis <- function(pattern, layersURL="https://landgisapi.opengeohub.org/query/layers", update=FALSE){
   #pattern=c("clay", "10..10cm")
   data("landgis.tables")

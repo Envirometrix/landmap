@@ -1,8 +1,7 @@
 # landmap package for R
 
 Package provides methodology for automated mapping i.e. spatial interpolation and/or 
-prediction using Ensemble Machine Learning (extends functionality of the 
-[subsemble](https://github.com/ledell/subsemble) and the [SuperLearner](https://github.com/ecpolley/SuperLearner) packages). Key functionality includes:
+prediction using **Ensemble Machine Learning** (extends functionality of the [mlr package](https://mlr.mlr-org.com/)). Key functionality includes:
 
 * `train.spLearner` --- train a spatial prediction and/or interpolation model using Ensemble Machine Learning (works with numeric, binomial and factor-type variables),
 * `buffer.dist` --- derive buffer (geographical) distances that can be used as covariates in spLearner, 
@@ -57,21 +56,23 @@ Converting ffreq to indicators...
 Converting covariates to principal components...
 Deriving buffer distances to points...TRUE
 Fitting a variogram using 'linkfit' and trend model...TRUE
-Using block size ID for spatial Cross Validation...TRUE
-Fitting a spatial learner using 'subsemble'...TRUE
-Loading required package: parallel
+Starting parallelization in mode=socket with cpus=8.
+Fitting a spatial learner using 'mlr::makeRegrTask'...TRUE
+Exporting objects to slaves for mode socket: .mlr.slave.options
+Mapping in parallel: mode = socket; cpus = 8; elements = 5.
+Exporting objects to slaves for mode socket: .mlr.slave.options
+Mapping in parallel: mode = socket; cpus = 8; elements = 5.
+Exporting objects to slaves for mode socket: .mlr.slave.options
+Mapping in parallel: mode = socket; cpus = 8; elements = 5.
+Stopped parallelization. All cleaned up.
 ```
 
 Note that the variogram model is only fitted to estimate effective range of spatial dependence.
 Spatial Prediction models are based only on fitting the [Ensemble Machine Learning](https://koalaverse.github.io/machine-learning-in-R/stacking.html#stacking-software-in-r) 
-(by default landmap uses `c("SL.xgboost", "SL.ranger", "SL.ksvm")`) with geographical distances 
-as additional covariates. To check modelling success we can look at the summary model properties:
+(by default landmap uses `c("regr.xgboost", "regr.ranger", "regr.ksvm")`) with geographical distances 
+as additional covariates. 
 
-```r
-print(m)
-```
-
-which shows that the Cross Validation R-square is about 55%. Next we can generate predictions using:
+Next we can generate predictions using:
 
 ```r
 meuse.lead <- predict(m)
@@ -84,9 +85,8 @@ Animated predictions by 9 models (3x independently fitted random forest, SVM and
 
 <img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/meuse_lead_ensemble.gif" width="400" />
 
-Notice that the predictions also incorporate spatial correlation between values, 
-and hence can be used as a possible replacement for kriging methods ([Hengl et al. 2018](https://doi.org/10.7717/peerj.5518)). 
-Automation comes, however, at the high computing and RAM usage costs.
+The predictions shown in the image above incorporate spatial correlation between values, 
+and hence can be used as a possible replacement for kriging methods ([Hengl et al. 2018](https://doi.org/10.7717/peerj.5518)). Automation comes, however, at the high computing and RAM usage costs.
 
 In the following example we use somewhat larger data set from the SIC1997 exercise.
 
@@ -98,9 +98,9 @@ rainfall1km <- predict(mR)
 
 The processing is much more computational because the data set consists from 467 points.
 This will make the regression matrix becoming extensive, and also 5x3 models need to be fitted.
-At the moment, using `train.spLearner` for point data set with >>1000 points is not recommended.
+At the moment, using `train.spLearner` for point data set with >>1000 points should be done with caution.
 
-The final results also shows quite similar results to universal kriging in geoR.
+The final results also shows quite similar results to universal kriging in [geoR](http://leg.ufpr.br/~paulojus/geoR/).
 The model error map, however, shows more spatial contrast and helps detect areas of 
 especially high errors.
 
@@ -116,14 +116,23 @@ proj4string(eberg_grid) <- CRS("+init=epsg:31467")
 data(eberg)
 coordinates(eberg) <- ~X+Y
 proj4string(eberg) <- CRS("+init=epsg:31467")
-mF <- train.spLearner(eberg["TAXGRSC"], covariates=eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")])
+X <- eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")]
+mF <- train.spLearner(eberg["TAXGRSC"], covariates=X, buffer.dist=FALSE)
 TAXGRSC <- predict(mF)
 ```
 
-![figure](https://github.com/Envirometrix/PredictiveSoilMapping/blob/master/figures/predicted_classes_eberg.png) *Figure: Predicted Ebergotzen soil types (probabilities).*
+![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/eberg/predicted_classes_eberg.png) *Figure: Predicted Ebergotzen soil types (probabilities).*
 
-Note that in the case of factor variables, prediction are based on simple average from
-`ranger::range`, `e1071::svm` and `nnet::multinom`, which might be suboptimal.
+Note that in the case of factor variables, prediction are based on ensemble stacking
+based on the following three classification algorithms `c("classif.ranger", "classif.multinom", "classif.svm")`. See mlr documentation on how to add additional [learners](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html).
+
+Package mlr is provides a comprehensive environment for Machine Learning:
+
+- Ensemble predictions are based on the `mlr::makeStackedLearner` function,
+- Additional [learners](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html) can be added,
+- Processing can be parallelized using the [parallelMap package](https://mlr.mlr-org.com/articles/tutorial/parallelization.html),
+
+Ensemble Machine Learning is also available via the [subsemble](https://github.com/ledell/subsemble) and the [SuperLearner](https://github.com/ecpolley/SuperLearner) packages (not used here).
 
 ### Accessing LandGIS layers
 
@@ -173,11 +182,11 @@ This takes few steps because you have to determine:
 * mask out pixels of interest,
 
 For smaller areas (<500Mb in size) download of data using WCS is fast and efficient.
-For accessing and using global layers larger than 1GB we recommend directly downloading data from zenodo.org.
+For accessing and using global layers larger than 1GB we recommend directly downloading data from [zenodo.org](https://zenodo.org/search?page=1&size=20&q=LandGIS).
 
 ## Contributions
 
 * Contributions to landmap are welcome. Issues and pull requests are the preferred ways of sharing them.
-* We are interested in results and experiences of using the train.spLearner function 
-  for generating spatial predictions with your own data sets. Share your data sets, 
-  code and results either using github issues and/or R-sig-geo mailing list. 
+* We are interested in your results and experiences with using the `train.spLearner` function 
+  for generating spatial predictions with your own data. Share your data sets, 
+  code and results either using github issues and/or R-sig-geo mailing list.

@@ -1,13 +1,48 @@
-.train.spLearner.ov <- function(observations, formulaString, covariates, SL.library, family = gaussian(), subsets = 3, cvControl = list(V=5), lambda = 0.5, cov.model = "exponential", subsample = 5000, parallel = "multicore", cell.size, id,  ...){
+#' Train a spatial prediction and/or interpolation model using Ensemble Machine Learning
+#' from a regression/classification matrix
+#'
+#' @param observations Data frame regression matrix
+#' @param formulaString Model formula
+#' @param covariates SpatialPixelsDataFrame object
+#' @param SL.library List of learners
+#' @param family Family e.g. gaussian()
+#' @param method Ensemble stacking method (see makeStackedLearner)
+#' @param predict.type Prediction type 'prob' or 'response'
+#' @param super.learner Ensemble stacking model
+#' @param subsets Number of subsets for repeated CV
+#' @param cvControl Cross-validation setting (number of folds)
+#' @param lambda Target variable transformation (0.5 or 1)
+#' @param cov.model Covariance model for variogram fitting
+#' @param subsample For large datasets consider random subsetting training data
+#' @param parallel Initiate parellel processing
+#' @param cell.size Block size for spatial Cross-validation
+#' @param id Id column name to control clusters of data
+#' @param weights Optional weights (per row) that learners will use to account for variable data quality
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+train.spLearner.matrix <- function(observations, formulaString, covariates, SL.library, family = gaussian(), method = "stack.cv", predict.type, super.learner = "regr.glmnet", subsets = 3, cvControl = 5, lambda = 0.5, cov.model = "exponential", subsample = 5000, parallel = "multicore", cell.size, id = NULL, weights = NULL, ...){
   if(!.Platform$OS.type=="unix") { parallel <- "seq" }
   tv <- all.vars(formulaString)[1]
+  if(family$family == "binomial"){
+    observations[,tv] <- as.factor(observations[,tv])
+    if(!length(levels(observations[,tv]))==2){
+      stop("Binary variable expected with two classes")
+    }
+  }
   Y <- observations[,tv]
+  xyn <- attr(covariates@bbox, "dimnames")[[1]]
   if(missing(SL.library)){
     if(is.numeric(Y) & family$family == "gaussian"){
-      SL.library <- c("SL.xgboost", "SL.ranger", "SL.ksvm")
+      SL.library <- c("regr.xgboost", "regr.ranger", "regr.ksvm")
+      if(missing(predict.type)){ predict.type <- "response" }
     }
     if(is.factor(Y) | family$family == "binomial"){
-      SL.library <- c("SL.ranger", "SL.ksvm", "SL.glmnet")
+      SL.library <- c("classif.ranger", "classif.multinom", "classif.svm")
+      if(missing(predict.type)){ predict.type <- "prob" }
     }
   }
   if(is.numeric(Y)){
@@ -23,8 +58,8 @@
     formulaString.vgm <- as.formula(paste(tv, "~", paste(covs.vgm, collapse="+")))
     rvgm <- fit.vgmModel(formulaString.vgm, rmatrix = observations, predictionDomain = covariates[covs.vgm], lambda = lambda, ini.var = ini.var, cov.model = cov.model, subsample = subsample)
   } else {
+    message("Skipping variogram modeling...", immediate. = TRUE)
     points <- observations
-    xyn <- attr(covariates@bbox, "dimnames")[[1]]
     coordinates(points) <- as.formula(paste("~", paste(xyn, collapse = "+"), sep=""))
     proj4string(points) <- covariates@proj4string
     rvgm <- list(vgm=list(practicalRange=NA, cov.model="nugget", lambda=NA), observations=points)
@@ -41,30 +76,40 @@
     grd <- sp::GridTopology(cellcentre.offset=covariates@bbox[,1], cellsize=rep(cell.size,2), cells.dim=c(ceiling(abs(diff(covariates@bbox[1,])/cell.size)), ncols=ceiling(abs(diff(covariates@bbox[2,])/cell.size))))
     r.sp <- sp::SpatialGridDataFrame(grd, proj4string = covariates@proj4string, data=data.frame(gid=1:(grd@cells.dim[1] * grd@cells.dim[2])))
     id <- sp::over(sp::SpatialPoints(observations[,attr(covariates@bbox, "dimnames")[[1]]], proj4string = covariates@proj4string), r.sp)$gid
-    message("Using block size ID for spatial Cross Validation...", immediate. = TRUE)
+    id[is.na(id)] = "NULL overlay"
+    id <- as.factor(id)
+    message("Estimating block size ID for spatial Cross Validation...", immediate. = TRUE)
   }
   ## fit the model:
   r.sel <- complete.cases(observations[, all.vars(formulaString)])
-  if(is.factor(Y)){
-    ## subsemble does not work with Factor vars
-    message("Fitting a spatial learner using classification models...", immediate. = TRUE)
-    m1 <- ranger::ranger(formulaString, observations[which(r.sel),], importance="impurity", write.forest=TRUE, probability=TRUE)
-    m2 <- e1071::svm(formulaString, observations[which(r.sel),], probability=TRUE, cross=5)
-    m3 <- nnet::multinom(formulaString, observations[which(r.sel),])
-    m <- list(m1, m2, m3)
+  if(parallel=="multicore"){
+    parallelMap::parallelStartSocket(parallel::detectCores())
+  }
+  if(is.factor(Y) | family$family == "binomial"){
+    message("Fitting a spatial learner using 'mlr::makeClassifTask'...", immediate. = TRUE)
+    tsk <- mlr::makeClassifTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn])
+    lrns <- lapply(SL.library, mlr::makeLearner)
+    lrns <- lapply(lrns, setPredictType, "prob")
+    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = "hill.climb", ...)
   } else {
-    message("Fitting a spatial learner using 'subsemble'...", immediate. = TRUE)
-    m <- subsemble::subsemble(x = observations[which(r.sel), all.vars(formulaString)[-1]], y = Y[which(r.sel)], learner = SL.library, parallel = parallel, id = id[which(r.sel)], cvControl = cvControl, subsets = subsets, family = family, ...)
+    message("Fitting a spatial learner using 'mlr::makeRegrTask'...", immediate. = TRUE)
+    tsk <- mlr::makeRegrTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn], blocking = id[which(r.sel)])
+    lrns <- lapply(SL.library, mlr::makeLearner)
+    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, resampling = makeResampleDesc(method="CV", iters = cvControl), use.feat=TRUE, ...)
+  }
+  m <- mlr::train(init.m, tsk)
+  if(parallel=="multicore"){
+    parallelMap::parallelStop()
   }
   out <- new("spLearner", spModel = m, vgmModel = rvgm, covariates = covariates, spID = r.sp)
   return(out)
 }
 
-setMethod("train.spLearner", signature(observations = "data.frame", formulaString = "formula", covariates = "SpatialPixelsDataFrame"), .train.spLearner.ov)
+setMethod("train.spLearner", signature(observations = "data.frame", formulaString = "formula", covariates = "SpatialPixelsDataFrame"), train.spLearner.matrix)
 
 #' Train a spatial prediction and/or interpolation model using Ensemble Machine Learning
 #'
-#' @description Automated spatial predictions and/or interpolation using Ensemble Machine Learning. Extends functionality of the \href{https://github.com/ledell/subsemble}{subsemble} and the \href{https://github.com/ecpolley/SuperLearner}{SuperLearner} packages. Suitable for predicting numeric, binomial and factor-type variables.
+#' @description Automated spatial predictions and/or interpolation using Ensemble Machine Learning. Extends functionality of the \href{https://github.com/mlr-org/mlr}{mlr} package. Suitable for predicting numeric, binomial and factor-type variables.
 #'
 #' @param observations SpatialPointsDataFrame.
 #' @param formulaString ANY.
@@ -79,8 +124,6 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #'
 #' @note Incorporates geographical distances when \code{buffer.dist=TRUE}.
 #' Effects of adding geographical distances into modeling are explained in detail in \href{https://doi.org/10.7717/peerj.5518}{Hengl et al. (2018)}.
-#' In the case of factor variables, prediction are based on simple average from
-#' \code{ranger}, \code{e1071::svm} and \code{nnet::multinom}, which might be suboptimal.
 #'
 #' @export
 #'
@@ -89,15 +132,21 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' library(geoR)
 #' library(plotKML)
 #' library(raster)
-#' library(SuperLearner)
-#' library(subsemble)
+#' library(parallelMap)
+#' library(mlr)
 #' demo(meuse, echo=FALSE)
-#' m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 1, cov.model = "nugget")
+#' ## Regression:
+#' m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 1)
 #' meuse.lead <- predict(m)
 #' plot(raster(meuse.lead$pred["model"]), col=R_pal[["rainbow_75"]][4:20], main="spLearner", axes=FALSE, box=FALSE)
 #' points(meuse, pch="+")
 #' plot(raster(meuse.lead$pred["model.error"]), col=rev(bpy.colors()), main="Model error", axes=FALSE, box=FALSE)
 #' points(meuse, pch="+")
+#' ## Classification:
+#' mC <- train.spLearner(meuse["soil"], covariates=meuse.grid[,c("dist","ffreq")])
+#' meuse.soil <- predict(mC)
+#' spplot(meuse.soil$pred[grep("prob.", names(meuse.soil$pred))], col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
+#' spplot(meuse.soil$pred[grep("error.", names(meuse.soil$pred))], col=rev(bpy.colors()))
 #' \dontrun{
 #' ## SIC1997
 #' data("sic1997")
@@ -109,6 +158,10 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' plot(raster(rainfall1km$pred["model.error"]), col=rev(bpy.colors()), main="Model error", axes=FALSE, box=FALSE)
 #' points(sic1997$daily.rainfall, pch="+")
 #'
+#' ## Ebergotzen data set
+#' data(eberg_grid)
+#' gridded(eberg_grid) <- ~x+y
+#' proj4string(eberg_grid) <- CRS("+init=epsg:31467")
 #' data(eberg)
 #' eb.s <- sample.int(nrow(eberg), 1400)
 #' eberg <- eberg[eb.s,]
@@ -117,20 +170,18 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' ## Binomial variable
 #' summary(eberg$TAXGRSC)
 #' eberg$Parabraunerde <- ifelse(eberg$TAXGRSC=="Parabraunerde", 1, 0)
-#' data(eberg_grid)
-#' gridded(eberg_grid) <- ~x+y
-#' proj4string(eberg_grid) <- CRS("+init=epsg:31467")
-#' mB <- train.spLearner(eberg["Parabraunerde"], covariates=eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")],
-#'                         family=binomial(), cov.model = "nugget", SL.library = c("SL.ranger", "SL.ksvm"))
-#' ## Factor variable
+#' X <- eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")]
+#' mB <- train.spLearner(eberg["Parabraunerde"], covariates=X, family=binomial(), cov.model = "nugget")
+#' ## Factor variable:
 #' data(eberg)
 #' coordinates(eberg) <- ~X+Y
 #' proj4string(eberg) <- CRS("+init=epsg:31467")
-#' mF <- train.spLearner(eberg["TAXGRSC"], covariates=eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")])
+#' X <- eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")]
+#' mF <- train.spLearner(eberg["TAXGRSC"], covariates=X, buffer.dist=FALSE)
 #' TAXGRSC <- predict(mF)
-#' plot(stack(TAXGRSC$pred), col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
+#' plot(stack(TAXGRSC$pred[grep("prob.", names(TAXGRSC$pred))]), col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
 #' }
-setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", formulaString = "ANY", covariates = "SpatialPixelsDataFrame"), function(observations, formulaString, covariates, SL.library, family = gaussian(), subsets = 3, cvControl = list(V=5), lambda = 0.5, cov.model = "exponential", subsample = 2000, parallel = "multicore", buffer.dist = TRUE, spc = TRUE,  ...){
+setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", formulaString = "ANY", covariates = "SpatialPixelsDataFrame"), function(observations, formulaString, covariates, SL.library, family = gaussian(), method = "stack.cv", predict.type, super.learner = "regr.glmnet", subsets = 3, cvControl = 5, lambda = 0.5, cov.model = "exponential", subsample = 2000, parallel = "multicore", buffer.dist = TRUE, spc = TRUE, id = NULL, weights = NULL, ...){
 
   if(missing(formulaString)){
     tv <- names(observations)[1]
@@ -154,11 +205,7 @@ setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", 
     }
     if(buffer.dist==TRUE){
       message("Deriving buffer distances to points...", immediate. = TRUE)
-      if(is.factor(observations@data[,1])){
-        classes <- observations@data[,1]
-      } else {
-        classes <- as.factor(1:nrow(observations))
-      }
+      classes <- as.factor(1:nrow(observations))
       covariates <- sp::cbind.Spatial(covariates, buffer.dist(observations[tv], covariates[1], classes))
     }
     formulaString <- as.formula(paste(tv, " ~ ", paste(names(covariates), collapse="+")))
@@ -177,11 +224,21 @@ setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", 
   if(!n.r.sel==nrow(observations)){
     message(paste0("Subsetting observations to ", round(n.r.sel/nrow(observations), 2)*100, "% complete cases..."), immediate. = TRUE)
   }
-  m <- .train.spLearner.ov(observations = ov, formulaString = formulaString, covariates = covariates, SL.library = SL.library, family = family, subsets = subsets, cvControl = cvControl, lambda = lambda, cov.model = cov.model, subsample = subsample, parallel = parallel, ...)
+  m <- train.spLearner.matrix(observations = ov, formulaString = formulaString, covariates = covariates, SL.library = SL.library, family = family, subsets = subsets, cvControl = cvControl, lambda = lambda, cov.model = cov.model, subsample = subsample, parallel = parallel, id=id, weights=weights, ...)
  return(m)
 })
 
-## overlay points and grids and prepare regression matrix
+#' Overlay points and grids and prepare regression matrix
+#'
+#' @param observations
+#' @param formulaString
+#' @param covariates
+#' @param dimensions
+#'
+#' @return
+#' @export
+#'
+#' @examples
 model.data <- function(observations, formulaString, covariates, dimensions=c("2D","3D","2D+T","3D+T")){
   if(missing(dimensions)){ dimensions <- dimensions[1] }
   if(dimensions=="2D"){
@@ -216,11 +273,23 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
 }
 
 
+#' Print object of type 'spLearner'
+#'
+#' @param x
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
 "print.spLearner" <- function(x, ...){
   message("Ensemble model:")
-  if(class(x@spModel)=="subsemble"){
+  if(any(class(x@spModel)=="subsemble")){
     print(x@spModel$metafit$fit)
     print(paste0("CV R-square: ", (1-x@spModel$metafit$fit$object$deviance/x@spModel$metafit$fit$object$null.deviance)))
+  }
+  if(any(class(x@spModel)=="BaseEnsembleModel")){
+    print(x@spModel)
   }
   message("Variogram model:")
   print(x@vgmModel$vgm)
@@ -243,26 +312,30 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
   if(missing(predictionLocations)){
     predictionLocations <- object@covariates
   }
-  if(class(object@spModel)=="subsemble"){
-    out <- predict(object@spModel, predictionLocations@data)
-    pred <- SpatialPixelsDataFrame(predictionLocations@coords, data=data.frame(model=out$pred), grid = predictionLocations@grid, proj4string = predictionLocations@proj4string)
+  if(any(class(object@spModel)=="BaseEnsembleModel")){
     if(model.error==TRUE){
-      if(class(object@spModel)=="subsemble"){
+      out <- as.matrix(as.data.frame(getStackedBaseLearnerPredictions(object@spModel, newdata=predictionLocations@data)))
+      if(any(object@spModel$task.desc$type=="classif")){
+        lvs <- object@spModel$task.desc$class.levels
+        pred.prob <- NULL
+        for(j in lvs){
+          pred.prob[[paste0("prob.",j)]] <- matrixStats::rowMeans2(out[,grep(paste0(".", j), attr(out, "dimnames")[[2]])], na.rm = TRUE)
+          pred.prob[[paste0("error.",j)]] <- matrixStats::rowSds(out[,grep(paste0(".", j), attr(out, "dimnames")[[2]])], na.rm = TRUE)
+        }
+        pred <- SpatialPixelsDataFrame(predictionLocations@coords, data=data.frame(pred.prob), grid = predictionLocations@grid, proj4string = predictionLocations@proj4string)
+      } else {
+        pred <- SpatialPixelsDataFrame(predictionLocations@coords, data=data.frame(model=matrixStats::rowMeans2(out, na.rm = TRUE)), grid = predictionLocations@grid, proj4string = predictionLocations@proj4string)
         ## weighted Sds where weights are the metalearner coefficients
-        wt <- abs(object@spModel$metafit$fit$object$coefficients[-1])
-        pred$model.error <- matrixStats::rowWeightedSds(as.matrix(out$subpred), w=wt, na.rm=TRUE)
+        #wt <- abs(object@spModel$metafit$fit$object$coefficients[-1])
+        #pred$model.error <- matrixStats::rowWeightedSds(out, w=wt, na.rm=TRUE)
+        pred$model.error <- matrixStats::rowSds(out, na.rm=TRUE)
       }
+      return(out <- list(pred=pred, subpred=as.data.frame(out)))
+    } else {
+      out <- predict(object@spModel, newdata=predictionLocations@data)
+      pred <- SpatialPixelsDataFrame(predictionLocations@coords, data=out$data, grid = predictionLocations@grid, proj4string = predictionLocations@proj4string)
+      return(out <- list(pred=pred, subpred=NULL))
     }
-    return(out = list(pred=pred, subpred=out$subpred))
-  } else {
-    leg <- object@spModel[[1]]$forest$levels
-    out1 <- predict(object@spModel[[1]], predictionLocations@data, probability=TRUE, na.action = na.pass)$predictions
-    out2 <- attr(predict(object@spModel[[2]], predictionLocations@data, probability=TRUE, na.action = na.pass), "probabilities")
-    out3 <- predict(object@spModel[[3]], predictionLocations@data, type="probs", na.action = na.pass)
-    lt <- list(out1[,leg], out2[,leg], out3[,leg])
-    out <- Reduce("+", lt) / length(lt)
-    pred <- SpatialPixelsDataFrame(predictionLocations@coords, data=data.frame(out), grid = predictionLocations@grid, proj4string = predictionLocations@proj4string)
-    return(out = list(pred=pred, subpred=lt))
   }
 }
 

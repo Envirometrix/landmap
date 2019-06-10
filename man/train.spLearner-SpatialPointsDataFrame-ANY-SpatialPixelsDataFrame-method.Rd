@@ -8,9 +8,11 @@
 
   \S4method{train.spLearner}{SpatialPointsDataFrame,ANY,SpatialPixelsDataFrame}(observations,
   formulaString, covariates, SL.library, family = gaussian(),
-  subsets = 3, cvControl = list(V = 5), lambda = 0.5,
+  method = "stack.cv", predict.type, super.learner = "regr.glmnet",
+  subsets = 3, cvControl = 5, lambda = 0.5,
   cov.model = "exponential", subsample = 2000,
-  parallel = "multicore", buffer.dist = TRUE, spc = TRUE, ...)
+  parallel = "multicore", buffer.dist = TRUE, spc = TRUE,
+  id = NULL, weights = NULL, ...)
 }
 \arguments{
 \item{observations}{SpatialPointsDataFrame.}
@@ -24,28 +26,32 @@ object of class spLearner, which contains fitted model, variogram model and spat
 used for Cross-validation.
 }
 \description{
-Automated spatial predictions and/or interpolation using Ensemble Machine Learning. Extends functionality of the \href{https://github.com/ledell/subsemble}{subsemble} and the \href{https://github.com/ecpolley/SuperLearner}{SuperLearner} packages. Suitable for predicting numeric, binomial and factor-type variables.
+Automated spatial predictions and/or interpolation using Ensemble Machine Learning. Extends functionality of the \href{https://github.com/mlr-org/mlr}{mlr} package. Suitable for predicting numeric, binomial and factor-type variables.
 }
 \note{
 Incorporates geographical distances when \code{buffer.dist=TRUE}.
 Effects of adding geographical distances into modeling are explained in detail in \href{https://doi.org/10.7717/peerj.5518}{Hengl et al. (2018)}.
-In the case of factor variables, prediction are based on simple average from
-\code{ranger}, \code{e1071::svm} and \code{nnet::multinom}, which might be suboptimal.
 }
 \examples{
 library(rgdal)
 library(geoR)
 library(plotKML)
 library(raster)
-library(SuperLearner)
-library(subsemble)
+library(parallelMap)
+library(mlr)
 demo(meuse, echo=FALSE)
-m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 1, cov.model = "nugget")
+## Regression:
+m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 1)
 meuse.lead <- predict(m)
 plot(raster(meuse.lead$pred["model"]), col=R_pal[["rainbow_75"]][4:20], main="spLearner", axes=FALSE, box=FALSE)
 points(meuse, pch="+")
 plot(raster(meuse.lead$pred["model.error"]), col=rev(bpy.colors()), main="Model error", axes=FALSE, box=FALSE)
 points(meuse, pch="+")
+## Classification:
+mC <- train.spLearner(meuse["soil"], covariates=meuse.grid[,c("dist","ffreq")])
+meuse.soil <- predict(mC)
+spplot(meuse.soil$pred[grep("prob.", names(meuse.soil$pred))], col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
+spplot(meuse.soil$pred[grep("error.", names(meuse.soil$pred))], col=rev(bpy.colors()))
 \dontrun{
 ## SIC1997
 data("sic1997")
@@ -57,6 +63,10 @@ points(sic1997$daily.rainfall, pch="+")
 plot(raster(rainfall1km$pred["model.error"]), col=rev(bpy.colors()), main="Model error", axes=FALSE, box=FALSE)
 points(sic1997$daily.rainfall, pch="+")
 
+## Ebergotzen data set
+data(eberg_grid)
+gridded(eberg_grid) <- ~x+y
+proj4string(eberg_grid) <- CRS("+init=epsg:31467")
 data(eberg)
 eb.s <- sample.int(nrow(eberg), 1400)
 eberg <- eberg[eb.s,]
@@ -65,18 +75,16 @@ proj4string(eberg) <- CRS("+init=epsg:31467")
 ## Binomial variable
 summary(eberg$TAXGRSC)
 eberg$Parabraunerde <- ifelse(eberg$TAXGRSC=="Parabraunerde", 1, 0)
-data(eberg_grid)
-gridded(eberg_grid) <- ~x+y
-proj4string(eberg_grid) <- CRS("+init=epsg:31467")
-mB <- train.spLearner(eberg["Parabraunerde"], covariates=eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")],
-                        family=binomial(), cov.model = "nugget", SL.library = c("SL.ranger", "SL.ksvm"))
-## Factor variable
+X <- eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")]
+mB <- train.spLearner(eberg["Parabraunerde"], covariates=X, family=binomial(), cov.model = "nugget")
+## Factor variable:
 data(eberg)
 coordinates(eberg) <- ~X+Y
 proj4string(eberg) <- CRS("+init=epsg:31467")
-mF <- train.spLearner(eberg["TAXGRSC"], covariates=eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")])
+X <- eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")]
+mF <- train.spLearner(eberg["TAXGRSC"], covariates=X, buffer.dist=FALSE)
 TAXGRSC <- predict(mF)
-plot(stack(TAXGRSC$pred), col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
+plot(stack(TAXGRSC$pred[grep("prob.", names(TAXGRSC$pred))]), col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
 }
 }
 \author{

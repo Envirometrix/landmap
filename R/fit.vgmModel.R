@@ -16,7 +16,7 @@
 setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "data.frame", predictionDomain = "SpatialPixelsDataFrame"), function(formulaString.vgm, rmatrix, predictionDomain, cov.model = "exponential", dimensions = list("2D", "3D", "2D+T", "3D+T"), lambda = 0.5, psiR = NULL, subsample = nrow(rmatrix), ini.var, ini.range, fix.psiA = FALSE, fix.psiR = FALSE, ...){
 
   if(missing(dimensions)){ dimensions <- dimensions[[1]] }
-  if(is.na(proj4string(predictionDomain))){ stop("proj4 string required for argument 'predictionDomain'") }
+  if(is.na(sp::proj4string(predictionDomain))){ stop("proj4 string required for argument 'predictionDomain'") }
   if(!any(names(rmatrix) %in% all.vars(formulaString.vgm))){
     stop("Variables in the 'formulaString.vgm' not found in the 'rmatrix' object.")
   }
@@ -63,7 +63,7 @@ setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "da
     }
     if(dimensions == "3D"){
       ## estimate area extent:
-      ini.range = sqrt(areaSpatialGrid(predictionDomain))/3
+      ini.range = sqrt(sp::areaSpatialGrid(predictionDomain))/3
       ## estimate anisotropy:
       if(is.null(psiR)){
         ## estimate initial range in the vertical direction:
@@ -74,8 +74,8 @@ setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "da
     if(dimensions == "2D"){
       diag <- (sqrt((rmatrix@bbox[1,2]-rmatrix@bbox[1,1])**2+(rmatrix@bbox[2,2]-rmatrix@bbox[2,1])**2))/3
       ## check if it is projected object:
-      if(!is.na(proj4string(predictionDomain))){
-        if(!is.projected(predictionDomain)){
+      if(!is.na(sp::proj4string(predictionDomain))){
+        if(!sp::is.projected(predictionDomain)){
           if(requireNamespace("fossil", quietly = TRUE)){
             ## Haversine Formula for Great Circle distance
             p.1 <- matrix(c(predictionDomain@bbox[1,1], predictionDomain@bbox[1,2]), ncol=2, dimnames=list(1,c("lon","lat")))
@@ -97,10 +97,10 @@ setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "da
     }
     ## fit sample variogram:
     if(length(all.vars(formulaString.vgm))==1){
-      try( rvgm <- likfit(x.geo, lambda = lambda, messages = FALSE, ini = c(ini.var, ini.range), cov.model = cov.model) )
+      try( rvgm <- geoR::likfit(x.geo, lambda = lambda, messages = FALSE, ini = c(ini.var, ini.range), cov.model = cov.model) )
       message("Fitting a variogram using 'linkfit'...", immediate. = TRUE)
     } else {
-      try( rvgm <- likfit(x.geo, lambda = lambda, messages = FALSE, trend = tcovs, ini = c(ini.var, ini.range), fix.psiA = FALSE, fix.psiR = FALSE, cov.model = cov.model) )
+      try( rvgm <- geoR::likfit(x.geo, lambda = lambda, messages = FALSE, trend = tcovs, ini = c(ini.var, ini.range), fix.psiA = FALSE, fix.psiR = FALSE, cov.model = cov.model) )
       message("Fitting a variogram using 'linkfit' and trend model...", immediate. = TRUE)
     }
     if(class(.Last.value)[1]=="try-error"){

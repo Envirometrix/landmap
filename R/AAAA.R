@@ -117,3 +117,7 @@ if (!isGeneric("sample.grid")){
 if(!isGeneric("buffer.dist")){
   setGeneric("buffer.dist", function(observations, predictionDomain, ...){standardGeneric("buffer.dist")})
 }
+
+if (!isGeneric("spmultinom")){
+  setGeneric("spmultinom", function(formulaString, observations, covariates, ...){standardGeneric("spmultinom")})
+}

@@ -29,10 +29,10 @@ Locally downloaded GeoTIFF.
 Access and download layers from OpenLandMap.org (LandGIS data service)
 }
 \examples{
-search.landgis(pattern=c("clay", "10..10cm"))
 library(plotKML)
 library(rgdal)
 data("sic1997")
+search.landgis(pattern=c("clay", "10..10cm"))
 search.landgis(pattern=c("clay", "10..10cm"))
 \dontrun{
 coverageId = "predicted250m:sol_clay.wfraction_usda.3a1a1a_m_250m_b10..10cm_1950..2017_v0.2"
