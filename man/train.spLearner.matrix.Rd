@@ -7,8 +7,8 @@ from a regression/classification matrix}
 \usage{
 train.spLearner.matrix(observations, formulaString, covariates, SL.library,
   family = gaussian(), method = "stack.cv", predict.type,
-  super.learner = "regr.glmnet", subsets = 3, cvControl = 5,
-  lambda = 0.5, cov.model = "exponential", subsample = 5000,
+  super.learner = "regr.glm", subsets = 3, lambda = 0.5,
+  cov.model = "exponential", subsample = 5000,
   parallel = "multicore", cell.size, id = NULL, weights = NULL, ...)
 }
 \arguments{
@@ -29,8 +29,6 @@ train.spLearner.matrix(observations, formulaString, covariates, SL.library,
 \item{super.learner}{Ensemble stacking model}
 
 \item{subsets}{Number of subsets for repeated CV}
-
-\item{cvControl}{Cross-validation setting (number of folds)}
 
 \item{lambda}{Target variable transformation (0.5 or 1)}
 

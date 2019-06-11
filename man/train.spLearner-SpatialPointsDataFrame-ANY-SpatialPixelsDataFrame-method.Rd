@@ -8,11 +8,10 @@
 
   \S4method{train.spLearner}{SpatialPointsDataFrame,ANY,SpatialPixelsDataFrame}(observations,
   formulaString, covariates, SL.library, family = gaussian(),
-  method = "stack.cv", predict.type, super.learner = "regr.glmnet",
-  subsets = 3, cvControl = 5, lambda = 0.5,
-  cov.model = "exponential", subsample = 2000,
-  parallel = "multicore", buffer.dist = TRUE, spc = TRUE,
-  id = NULL, weights = NULL, ...)
+  method = "stack.cv", predict.type, super.learner = "regr.glm",
+  subsets = 3, lambda = 0.5, cov.model = "exponential",
+  subsample = 2000, parallel = "multicore", buffer.dist = TRUE,
+  spc = TRUE, id = NULL, weights = NULL, ...)
 }
 \arguments{
 \item{observations}{SpatialPointsDataFrame.}
@@ -38,12 +37,14 @@ library(geoR)
 library(plotKML)
 library(raster)
 library(parallelMap)
+library(xgboost)
+library(kernlab)
 library(mlr)
 demo(meuse, echo=FALSE)
 ## Regression:
 m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 1)
 meuse.lead <- predict(m)
-plot(raster(meuse.lead$pred["model"]), col=R_pal[["rainbow_75"]][4:20], main="spLearner", axes=FALSE, box=FALSE)
+plot(raster(meuse.lead$pred["response"]), col=R_pal[["rainbow_75"]][4:20], main="spLearner", axes=FALSE, box=FALSE)
 points(meuse, pch="+")
 plot(raster(meuse.lead$pred["model.error"]), col=rev(bpy.colors()), main="Model error", axes=FALSE, box=FALSE)
 points(meuse, pch="+")

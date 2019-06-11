@@ -10,7 +10,6 @@
 #' @param predict.type Prediction type 'prob' or 'response'
 #' @param super.learner Ensemble stacking model
 #' @param subsets Number of subsets for repeated CV
-#' @param cvControl Cross-validation setting (number of folds)
 #' @param lambda Target variable transformation (0.5 or 1)
 #' @param cov.model Covariance model for variogram fitting
 #' @param subsample For large datasets consider random subsetting training data
@@ -24,7 +23,7 @@
 #' @export
 #'
 #' @examples
-train.spLearner.matrix <- function(observations, formulaString, covariates, SL.library, family = gaussian(), method = "stack.cv", predict.type, super.learner = "regr.glmnet", subsets = 3, cvControl = 5, lambda = 0.5, cov.model = "exponential", subsample = 5000, parallel = "multicore", cell.size, id = NULL, weights = NULL, ...){
+train.spLearner.matrix <- function(observations, formulaString, covariates, SL.library, family = gaussian(), method = "stack.cv", predict.type, super.learner = "regr.glm", subsets = 3, lambda = 0.5, cov.model = "exponential", subsample = 5000, parallel = "multicore", cell.size, id = NULL, weights = NULL, ...){
   if(!.Platform$OS.type=="unix") { parallel <- "seq" }
   tv <- all.vars(formulaString)[1]
   if(family$family == "binomial"){
@@ -95,7 +94,7 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
     message("Fitting a spatial learner using 'mlr::makeRegrTask'...", immediate. = TRUE)
     tsk <- mlr::makeRegrTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn], blocking = id[which(r.sel)])
     lrns <- lapply(SL.library, mlr::makeLearner)
-    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, resampling = mlr::makeResampleDesc(method="CV", iters = cvControl), use.feat=TRUE, ...)
+    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, ...)
   }
   m <- mlr::train(init.m, tsk)
   if(parallel=="multicore"){
@@ -140,7 +139,7 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' ## Regression:
 #' m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 1)
 #' meuse.lead <- predict(m)
-#' plot(raster(meuse.lead$pred["model"]), col=R_pal[["rainbow_75"]][4:20], main="spLearner", axes=FALSE, box=FALSE)
+#' plot(raster(meuse.lead$pred["response"]), col=R_pal[["rainbow_75"]][4:20], main="spLearner", axes=FALSE, box=FALSE)
 #' points(meuse, pch="+")
 #' plot(raster(meuse.lead$pred["model.error"]), col=rev(bpy.colors()), main="Model error", axes=FALSE, box=FALSE)
 #' points(meuse, pch="+")
@@ -188,7 +187,7 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' TAXGRSC <- predict(mF)
 #' plot(stack(TAXGRSC$pred[grep("prob.", names(TAXGRSC$pred))]), col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
 #' }
-setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", formulaString = "ANY", covariates = "SpatialPixelsDataFrame"), function(observations, formulaString, covariates, SL.library, family = gaussian(), method = "stack.cv", predict.type, super.learner = "regr.glmnet", subsets = 3, cvControl = 5, lambda = 0.5, cov.model = "exponential", subsample = 2000, parallel = "multicore", buffer.dist = TRUE, spc = TRUE, id = NULL, weights = NULL, ...){
+setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", formulaString = "ANY", covariates = "SpatialPixelsDataFrame"), function(observations, formulaString, covariates, SL.library, family = gaussian(), method = "stack.cv", predict.type, super.learner = "regr.glm", subsets = 3, lambda = 0.5, cov.model = "exponential", subsample = 2000, parallel = "multicore", buffer.dist = TRUE, spc = TRUE, id = NULL, weights = NULL, ...){
 
   if(missing(formulaString)){
     tv <- names(observations)[1]
@@ -231,7 +230,7 @@ setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", 
   if(!n.r.sel==nrow(observations)){
     message(paste0("Subsetting observations to ", round(n.r.sel/nrow(observations), 2)*100, "% complete cases..."), immediate. = TRUE)
   }
-  m <- train.spLearner.matrix(observations = ov, formulaString = formulaString, covariates = covariates, SL.library = SL.library, family = family, subsets = subsets, cvControl = cvControl, lambda = lambda, cov.model = cov.model, subsample = subsample, parallel = parallel, id=id, weights=weights, ...)
+  m <- train.spLearner.matrix(observations = ov, formulaString = formulaString, covariates = covariates, SL.library = SL.library, family = family, subsets = subsets, lambda = lambda, cov.model = cov.model, subsample = subsample, parallel = parallel, id=id, weights=weights, ...)
  return(m)
 })
 
@@ -319,28 +318,29 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
   if(missing(predictionLocations)){
     predictionLocations <- object@covariates
   }
+  out <- predict(object@spModel, newdata=predictionLocations@data)
   if(any(class(object@spModel)=="BaseEnsembleModel")){
     if(model.error==TRUE){
-      out <- as.matrix(as.data.frame(getStackedBaseLearnerPredictions(object@spModel, newdata=predictionLocations@data)))
+      out.c <- as.matrix(as.data.frame(getStackedBaseLearnerPredictions(object@spModel, newdata=predictionLocations@data)))
       if(any(object@spModel$task.desc$type=="classif")){
         lvs <- object@spModel$task.desc$class.levels
+        ## model error
         pred.prob <- NULL
         for(j in lvs){
-          pred.prob[[paste0("prob.",j)]] <- matrixStats::rowMeans2(out[,grep(paste0(".", j), attr(out, "dimnames")[[2]])], na.rm = TRUE)
-          pred.prob[[paste0("error.",j)]] <- matrixStats::rowSds(out[,grep(paste0(".", j), attr(out, "dimnames")[[2]])], na.rm = TRUE)
+          pred.prob[[paste0("error.",j)]] <- matrixStats::rowSds(out.c[,grep(paste0(".", j), attr(out.c, "dimnames")[[2]])], na.rm = TRUE)
         }
-        pred <- SpatialPixelsDataFrame(predictionLocations@coords, data=data.frame(pred.prob), grid = predictionLocations@grid, proj4string = predictionLocations@proj4string)
+        pred <- SpatialPixelsDataFrame(predictionLocations@coords, data=cbind(out$data, data.frame(pred.prob)), grid = predictionLocations@grid, proj4string = predictionLocations@proj4string)
       } else {
-        pred <- SpatialPixelsDataFrame(predictionLocations@coords, data=data.frame(model=matrixStats::rowMeans2(out, na.rm = TRUE)), grid = predictionLocations@grid, proj4string = predictionLocations@proj4string)
         ## weighted Sds where weights are the metalearner coefficients
         #wt <- abs(object@spModel$metafit$fit$object$coefficients[-1])
-        #pred$model.error <- matrixStats::rowWeightedSds(out, w=wt, na.rm=TRUE)
-        pred$model.error <- matrixStats::rowSds(out, na.rm=TRUE)
+        wt <- object@spModel$learner.model$super.model$learner.model$coefficients[-1]
+        pred <- SpatialPixelsDataFrame(predictionLocations@coords, data=out$data, grid=predictionLocations@grid, proj4string=predictionLocations@proj4string)
+        pred$model.error <- matrixStats::rowWeightedSds(out.c, w=wt, na.rm=TRUE)
+        #pred$model.error <- matrixStats::rowSds(out, na.rm=TRUE)
       }
-      return(out <- list(pred=pred, subpred=as.data.frame(out)))
+      return(out <- list(pred=pred, subpred=as.data.frame(out.c)))
     } else {
-      out <- predict(object@spModel, newdata=predictionLocations@data)
-      pred <- SpatialPixelsDataFrame(predictionLocations@coords, data=out$data, grid = predictionLocations@grid, proj4string = predictionLocations@proj4string)
+      pred <- SpatialPixelsDataFrame(predictionLocations@coords, data=out$data, grid=predictionLocations@grid, proj4string = predictionLocations@proj4string)
       return(out <- list(pred=pred, subpred=NULL))
     }
   }
