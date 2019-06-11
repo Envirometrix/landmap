@@ -333,7 +333,7 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
       } else {
         ## weighted Sds where weights are the metalearner coefficients
         #wt <- abs(object@spModel$metafit$fit$object$coefficients[-1])
-        wt <- object@spModel$learner.model$super.model$learner.model$coefficients[-1]
+        wt <- abs(object@spModel$learner.model$super.model$learner.model$coefficients[-1])
         pred <- SpatialPixelsDataFrame(predictionLocations@coords, data=out$data, grid=predictionLocations@grid, proj4string=predictionLocations@proj4string)
         pred$model.error <- matrixStats::rowWeightedSds(out.c, w=wt, na.rm=TRUE)
         #pred$model.error <- matrixStats::rowSds(out, na.rm=TRUE)
