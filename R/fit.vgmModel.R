@@ -96,6 +96,7 @@ setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "da
       ini.var <- var(x.geo$data, na.rm = TRUE)
     }
     ## fit sample variogram:
+    rvgm <- list(cov.model="nugget", lambda=lambda, practicalRange=ini.range)
     if(length(all.vars(formulaString.vgm))==1){
       try( rvgm <- geoR::likfit(x.geo, lambda = lambda, messages = FALSE, ini = c(ini.var, ini.range), cov.model = cov.model) )
       message("Fitting a variogram using 'linkfit'...", immediate. = TRUE)
@@ -105,9 +106,6 @@ setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "da
     }
     if(class(.Last.value)[1]=="try-error"){
       warning("Variogram model could not be fitted.")
-    }
-    if(any(!(c("practicalRange", "cov.model") %in% names(rvgm)))){
-      rvgm <- list(cov.model="nugget", lambda=lambda, practicalRange=ini.range)
     }
   } else {
     rvgm <- list(cov.model="nugget", lambda=lambda, practicalRange=NA)

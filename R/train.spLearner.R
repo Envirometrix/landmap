@@ -1,29 +1,29 @@
 #' Train a spatial prediction and/or interpolation model using Ensemble Machine Learning
 #' from a regression/classification matrix
 #'
-#' @param observations Data frame regression matrix
-#' @param formulaString Model formula
-#' @param covariates SpatialPixelsDataFrame object
-#' @param SL.library List of learners
-#' @param family Family e.g. gaussian()
-#' @param method Ensemble stacking method (see makeStackedLearner)
-#' @param predict.type Prediction type 'prob' or 'response'
-#' @param super.learner Ensemble stacking model
-#' @param subsets Number of subsets for repeated CV
-#' @param lambda Target variable transformation (0.5 or 1)
-#' @param cov.model Covariance model for variogram fitting
-#' @param subsample For large datasets consider random subsetting training data
-#' @param parallel Initiate parellel processing
-#' @param cell.size Block size for spatial Cross-validation
-#' @param id Id column name to control clusters of data
-#' @param weights Optional weights (per row) that learners will use to account for variable data quality
+#' @param observations Data frame regression matrix,
+#' @param formulaString Model formula,
+#' @param covariates SpatialPixelsDataFrame object,
+#' @param SL.library List of learners,
+#' @param family Family e.g. gaussian(),
+#' @param method Ensemble stacking method (see makeStackedLearner),
+#' @param predict.type Prediction type 'prob' or 'response',
+#' @param super.learner Ensemble stacking model usually \code{regr.glm},
+#' @param subsets Number of subsets for repeated CV,
+#' @param lambda Target variable transformation (0.5 or 1),
+#' @param cov.model Covariance model for variogram fitting,
+#' @param subsample For large datasets consider random subsetting training data,
+#' @param parallel Initiate parellel processing,
+#' @param cell.size Block size for spatial Cross-validation,
+#' @param id Id column name to control clusters of data,
+#' @param weights Optional weights (per row) that learners will use to account for variable data quality,
 #' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-train.spLearner.matrix <- function(observations, formulaString, covariates, SL.library, family = gaussian(), method = "stack.cv", predict.type, super.learner = "regr.glm", subsets = 3, lambda = 0.5, cov.model = "exponential", subsample = 5000, parallel = "multicore", cell.size, id = NULL, weights = NULL, ...){
+train.spLearner.matrix <- function(observations, formulaString, covariates, SL.library, family = gaussian(), method = "stack.cv", predict.type, super.learner = "regr.glm", subsets = 5, lambda = 0.5, cov.model = "exponential", subsample = 5000, parallel = "multicore", cell.size, id = NULL, weights = NULL, ...){
   if(!.Platform$OS.type=="unix") { parallel <- "seq" }
   tv <- all.vars(formulaString)[1]
   if(family$family == "binomial"){
@@ -36,11 +36,11 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
   xyn <- attr(covariates@bbox, "dimnames")[[1]]
   if(missing(SL.library)){
     if(is.numeric(Y) & family$family == "gaussian"){
-      SL.library <- c("regr.xgboost", "regr.ranger", "regr.ksvm", "regr.glmnet")
+      SL.library <- c("regr.ranger", "regr.ksvm", "regr.glmnet", "regr.cubist") ## "regr.xgboost", "regr.bartMachine"
       if(missing(predict.type)){ predict.type <- "response" }
     }
     if(is.factor(Y) | family$family == "binomial"){
-      SL.library <- c("classif.ranger", "classif.multinom", "classif.svm")
+      SL.library <- c("classif.ranger", "classif.svm", "classif.multinom")
       if(missing(predict.type)){ predict.type <- "prob" }
     }
   }
@@ -53,7 +53,12 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
       ini.var <- var(Y, na.rm = TRUE)
     }
     ## strip buffer distances from vgm modeling
-    covs.vgm <- names(covariates)[-grep(pattern=glob2rx("layer.*$"), names(covariates))]
+    rm.n = unlist(sapply(c("rX_*$","rY_*$","layer.*$"), function(i){grep(pattern=glob2rx(i), names(covariates))}))
+    if(length(rm.n)>0){
+      covs.vgm <- names(covariates)[-rm.n]
+    } else {
+      covs.vgm <- names(covariates)
+    }
     formulaString.vgm <- as.formula(paste(tv, "~", paste(covs.vgm, collapse="+")))
     rvgm <- fit.vgmModel(formulaString.vgm, rmatrix = observations, predictionDomain = covariates[covs.vgm], lambda = lambda, ini.var = ini.var, cov.model = cov.model, subsample = subsample)
   } else {
@@ -84,6 +89,7 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
   if(parallel=="multicore"){
     parallelMap::parallelStartSocket(parallel::detectCores())
   }
+  message(paste0("Using learners: ", paste(SL.library, collapse = ", "), "..."), immediate. = TRUE)
   if(is.factor(Y) | family$family == "binomial"){
     message("Fitting a spatial learner using 'mlr::makeClassifTask'...", immediate. = TRUE)
     tsk <- mlr::makeClassifTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn])
@@ -113,6 +119,22 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' @param observations SpatialPointsDataFrame.
 #' @param formulaString ANY.
 #' @param covariates SpatialPixelsDataFrame.
+#' @param SL.library List of learners,
+#' @param family Family e.g. gaussian(),
+#' @param method Ensemble stacking method (see makeStackedLearner) usually \code{stack.cv},
+#' @param predict.type Prediction type 'prob' or 'response',
+#' @param super.learner Ensemble stacking model usually \code{regr.glm},
+#' @param subsets Number of subsets for repeated CV,
+#' @param lambda Target variable transformation (0.5 or 1),
+#' @param cov.model Covariance model for variogram fitting,
+#' @param subsample For large datasets consider random subsetting training data,
+#' @param parallel Initiate parellel processing,
+#' @param buffer.dist Specify whether to use buffer distances to points as covariates,
+#' @param oblique.coords Specify whether to use oblique coordinates as covariates,
+#' @param theta.list List of angles (in radians) used to derive oblique coordinates,
+#' @param id Id column name to control clusters of data,
+#' @param weights Optional weights (per row) that learners will use to account for variable data quality,
+#' @param ...
 #'
 #' @importClassesFrom sp SpatialPixelsDataFrame SpatialPointsDataFrame
 #'
@@ -121,8 +143,13 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #'
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
 #'
-#' @note Incorporates geographical distances when \code{buffer.dist=TRUE}.
+#' @note By default uses oblique coordinates (rotated coordinates) as described in Moller et al. (2019) "Oblique Coordinates as Covariates for Digital Soil Mapping" to account for geographical distribution of values.
+#' Buffer geographical distances can be added by setting \code{buffer.dist=TRUE}.
+#' Using either oblique coordinates and/or buffer distances is not recommended for point data set with distinct spatial clustering.
 #' Effects of adding geographical distances into modeling are explained in detail in \href{https://doi.org/10.7717/peerj.5518}{Hengl et al. (2018)}.
+#' Default learners used for regression are \code{c("regr.ranger", "regr.ksvm", "regr.glmnet", "regr.cubist")}.
+#' Default learners used for classification / binomial variables are \code{c("classif.ranger", "classif.svm", "classif.multinom")}, with \code{predict.type="prob"}.
+#' When using \code{method = "stack.cv"} each training and prediction round could produce somewhat different results due to randomisation of CV.
 #'
 #' @export
 #'
@@ -135,19 +162,26 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' library(xgboost)
 #' library(kernlab)
 #' library(mlr)
+#' library(nnet)
+#' library(Cubist)
 #' demo(meuse, echo=FALSE)
+#'
 #' ## Regression:
 #' m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 1)
+#' ## Ensemble model (meta-learner):
+#' m@spModel$learner.model$super.model$learner.model
 #' meuse.lead <- predict(m)
 #' plot(raster(meuse.lead$pred["response"]), col=R_pal[["rainbow_75"]][4:20], main="spLearner", axes=FALSE, box=FALSE)
 #' points(meuse, pch="+")
 #' plot(raster(meuse.lead$pred["model.error"]), col=rev(bpy.colors()), main="Model error", axes=FALSE, box=FALSE)
 #' points(meuse, pch="+")
+#'
 #' ## Classification:
 #' mC <- train.spLearner(meuse["soil"], covariates=meuse.grid[,c("dist","ffreq")])
 #' meuse.soil <- predict(mC)
 #' spplot(meuse.soil$pred[grep("prob.", names(meuse.soil$pred))], col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
 #' spplot(meuse.soil$pred[grep("error.", names(meuse.soil$pred))], col=rev(bpy.colors()))
+#'
 #' \dontrun{
 #' ## SIC1997
 #' data("sic1997")
@@ -155,7 +189,7 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' mR <- train.spLearner(sic1997$daily.rainfall, covariates=X, lambda=1)
 #' rainfall1km <- predict(mR)
 #' par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
-#' plot(raster(rainfall1km$pred["model"]), col=R_pal[["rainbow_75"]][4:20], main="spLearner", axes=FALSE, box=FALSE)
+#' plot(raster(rainfall1km$pred["response"]), col=R_pal[["rainbow_75"]][4:20], main="spLearner", axes=FALSE, box=FALSE)
 #' points(sic1997$daily.rainfall, pch="+")
 #' plot(raster(rainfall1km$pred["model.error"]), col=rev(bpy.colors()), main="Model error", axes=FALSE, box=FALSE)
 #' points(sic1997$daily.rainfall, pch="+")
@@ -183,11 +217,11 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' coordinates(eberg) <- ~X+Y
 #' proj4string(eberg) <- CRS("+init=epsg:31467")
 #' X <- eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")]
-#' mF <- train.spLearner(eberg["TAXGRSC"], covariates=X, buffer.dist=FALSE)
+#' mF <- train.spLearner(eberg["TAXGRSC"], covariates=X)
 #' TAXGRSC <- predict(mF)
 #' plot(stack(TAXGRSC$pred[grep("prob.", names(TAXGRSC$pred))]), col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
 #' }
-setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", formulaString = "ANY", covariates = "SpatialPixelsDataFrame"), function(observations, formulaString, covariates, SL.library, family = gaussian(), method = "stack.cv", predict.type, super.learner = "regr.glm", subsets = 3, lambda = 0.5, cov.model = "exponential", subsample = 2000, parallel = "multicore", buffer.dist = TRUE, spc = TRUE, id = NULL, weights = NULL, ...){
+setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", formulaString = "ANY", covariates = "SpatialPixelsDataFrame"), function(observations, formulaString, covariates, SL.library, family = gaussian(), method = "stack.cv", predict.type, super.learner = "regr.glm", subsets = 5, lambda = 0.5, cov.model = "exponential", subsample = 2000, parallel = "multicore", buffer.dist = FALSE, oblique.coords = TRUE, theta.list=seq(0, 180, length.out = 14)*pi/180, spc = TRUE, id = NULL, weights = NULL, ...){
 
   if(missing(formulaString)){
     tv <- names(observations)[1]
@@ -202,7 +236,7 @@ setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", 
         observations@data[,1] <- droplevels(flev)
       }
     }
-    if(spc==TRUE){
+    if(spc==TRUE&ncol(covariates)>1){
       covariates <- spc(covariates)@predicted
       if(ncol(covariates)>4){
         ## remove last PC as this usually only carries noise?
@@ -213,6 +247,21 @@ setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", 
       message("Deriving buffer distances to points...", immediate. = TRUE)
       classes <- as.factor(1:nrow(observations))
       covariates <- sp::cbind.Spatial(covariates, buffer.dist(observations[tv], covariates[1], classes))
+    }
+    if(oblique.coords==TRUE){
+      message("Deriving oblique coordinates...", immediate. = TRUE)
+      if(parallel=="multicore" & .Platform$OS.type=="unix"){
+        oblique.xy <- parallel::mclapply(theta.list, function(i){ spdep::Rotation(covariates[1]@coords, angle = i) }, mc.cores = parallel::detectCores())
+      } else {
+        oblique.xy <- list(NULL)
+        for(i in 1:length(theta.list)){
+          oblique.xy[[i]] <- spdep::Rotation(covariates[1]@coords, angle = theta.list[i])
+        }
+      }
+      oblique.xy <- SpatialPixelsDataFrame(covariates@coords, data=as.data.frame(do.call(cbind, oblique.xy)), proj4string = covariates@proj4string)
+      R = expand.grid(c("rX","rY"), round(theta.list,1))
+      names(oblique.xy) <- paste(R$Var1, R$Var2, sep="_")
+      covariates <- sp::cbind.Spatial(covariates, oblique.xy)
     }
     formulaString <- as.formula(paste(tv, " ~ ", paste(names(covariates), collapse="+")))
     if(length(all.vars(formulaString))>1000){

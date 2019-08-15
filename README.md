@@ -70,8 +70,7 @@ Stopped parallelization. All cleaned up.
 
 Note that the variogram model is only fitted to estimate effective range of spatial dependence.
 Spatial Prediction models are based only on fitting the [Ensemble Machine Learning](https://koalaverse.github.io/machine-learning-in-R/stacking.html#stacking-software-in-r) 
-(by default landmap uses `c("regr.xgboost", "regr.ranger", "regr.ksvm")`) with geographical distances 
-as additional covariates. 
+(by default landmap uses `c("regr.ranger", "regr.ksvm", "regr.glmnet", "regr.cubist")`; see [a complete list of learners available via mlr](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html)) with oblique coordinates (rotated coordinates) as described in Moller et al. (2019) "Oblique Coordinates as Covariates for Digital Soil Mapping" to account for spatial autocorrelation in values. Geographical distances to all points can be added by specifying `buffer.dist=TRUE`.
 
 Next we can generate predictions using:
 
