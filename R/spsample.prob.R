@@ -68,7 +68,7 @@ setMethod("spsample.prob", signature(observations = "SpatialPoints", covariates 
 
   ## mask out missing combinations:
   covariates <- covariates[stats::complete.cases(covariates@data),]
-  ov <- over(observations, covariates)
+  ov <- sp::over(observations, covariates)
   observations <- observations[stats::complete.cases(ov),]
 
   if(requireNamespace("spatstat", quietly = TRUE)&requireNamespace("maxlike", quietly = TRUE)){
@@ -94,10 +94,13 @@ setMethod("spsample.prob", signature(observations = "SpatialPoints", covariates 
     ml <- maxlike::maxlike(formula=fm, rasters=stack(covariates), points=observations@coords, method="BFGS", savedata=TRUE)
     ## bug in "maxlike" (https://github.com/rbchan/maxlike/issues/1); need to replace this 'by hand':
     ml$call$formula <- fm
-    ## TH: this operation can be time consuming and is not recommended for large grids!
-    ml.p <- as(predict(ml), "SpatialPixelsDataFrame")
+    ## TH: this operation can be time consuming and is not recommended for large grids
+    ml.p <- predict(ml)
+    ml.p <- as(ml.p, "SpatialGridDataFrame")
+    ml.max <- max(ml.p@data[,1], na.rm=TRUE)
+    ml.p@data[,1] <- signif(ml.p@data[,1]/ml.max, 3)
     ## sum two occurrence probabilities (masks for the two maps need to be exactly the same):
-    covariates$iprob <- signif((ml.p@data[,1] + dmap@data[,1])/2, 3)
+    covariates$iprob <- signif((ml.p@data[covariates@grid.index,1] + dmap@data[covariates@grid.index,1])/2, 3)
 
     out <- list(prob=covariates["iprob"], observations=as(observations, "SpatialPoints"), density=dmap, maxlike=ml.p, maxlikeFit=ml[-which(names(ml)=="rasters")])
     return(out)

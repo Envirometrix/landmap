@@ -7,42 +7,42 @@ from a regression/classification matrix}
 \usage{
 train.spLearner.matrix(observations, formulaString, covariates, SL.library,
   family = gaussian(), method = "stack.cv", predict.type,
-  super.learner = "regr.glm", subsets = 3, lambda = 0.5,
+  super.learner = "regr.glm", subsets = 5, lambda = 0.5,
   cov.model = "exponential", subsample = 5000,
   parallel = "multicore", cell.size, id = NULL, weights = NULL, ...)
 }
 \arguments{
-\item{observations}{Data frame regression matrix}
+\item{observations}{Data frame regression matrix,}
 
-\item{formulaString}{Model formula}
+\item{formulaString}{Model formula,}
 
-\item{covariates}{SpatialPixelsDataFrame object}
+\item{covariates}{SpatialPixelsDataFrame object,}
 
-\item{SL.library}{List of learners}
+\item{SL.library}{List of learners,}
 
-\item{family}{Family e.g. gaussian()}
+\item{family}{Family e.g. gaussian(),}
 
-\item{method}{Ensemble stacking method (see makeStackedLearner)}
+\item{method}{Ensemble stacking method (see makeStackedLearner),}
 
-\item{predict.type}{Prediction type 'prob' or 'response'}
+\item{predict.type}{Prediction type 'prob' or 'response',}
 
-\item{super.learner}{Ensemble stacking model}
+\item{super.learner}{Ensemble stacking model usually \code{regr.glm},}
 
-\item{subsets}{Number of subsets for repeated CV}
+\item{subsets}{Number of subsets for repeated CV,}
 
-\item{lambda}{Target variable transformation (0.5 or 1)}
+\item{lambda}{Target variable transformation (0.5 or 1),}
 
-\item{cov.model}{Covariance model for variogram fitting}
+\item{cov.model}{Covariance model for variogram fitting,}
 
-\item{subsample}{For large datasets consider random subsetting training data}
+\item{subsample}{For large datasets consider random subsetting training data,}
 
-\item{parallel}{Initiate parellel processing}
+\item{parallel}{Initiate parellel processing,}
 
-\item{cell.size}{Block size for spatial Cross-validation}
+\item{cell.size}{Block size for spatial Cross-validation,}
 
-\item{id}{Id column name to control clusters of data}
+\item{id}{Id column name to control clusters of data,}
 
-\item{weights}{Optional weights (per row) that learners will use to account for variable data quality}
+\item{weights}{Optional weights (per row) that learners will use to account for variable data quality,}
 
 \item{...}{}
 }

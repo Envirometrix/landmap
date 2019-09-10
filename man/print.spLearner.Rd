@@ -4,7 +4,7 @@
 \alias{print.spLearner}
 \title{Print object of type 'spLearner'}
 \usage{
-\method{print}{spLearner}(x, ...)
+\method{print}{spLearner}(object)
 }
 \arguments{
 \item{...}{}
