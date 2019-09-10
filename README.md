@@ -46,6 +46,8 @@ library(raster)
 library(glmnet)
 library(xgboost)
 library(kernlab)
+library(deepnet)
+library(Cubist)
 demo(meuse, echo=FALSE)
 m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 1)
 ```
@@ -55,10 +57,14 @@ this runs several steps:
 ```
 Converting ffreq to indicators...
 Converting covariates to principal components...
-Deriving buffer distances to points...TRUE
+Deriving oblique coordinates...TRUE
 Fitting a variogram using 'linkfit' and trend model...TRUE
+Estimating block size ID for spatial Cross Validation...TRUE
 Starting parallelization in mode=socket with cpus=8.
+Using learners: regr.ranger, regr.ksvm, regr.glmnet, regr.cubist...TRUE
 Fitting a spatial learner using 'mlr::makeRegrTask'...TRUE
+Exporting objects to slaves for mode socket: .mlr.slave.options
+Mapping in parallel: mode = socket; cpus = 8; elements = 5.
 Exporting objects to slaves for mode socket: .mlr.slave.options
 Mapping in parallel: mode = socket; cpus = 8; elements = 5.
 Exporting objects to slaves for mode socket: .mlr.slave.options
@@ -68,15 +74,48 @@ Mapping in parallel: mode = socket; cpus = 8; elements = 5.
 Stopped parallelization. All cleaned up.
 ```
 
-Note that the variogram model is only fitted to estimate effective range of spatial dependence.
+The variogram model is only fitted to estimate effective range of spatial dependence.
 Spatial Prediction models are based only on fitting the [Ensemble Machine Learning](https://koalaverse.github.io/machine-learning-in-R/stacking.html#stacking-software-in-r) 
-(by default landmap uses `c("regr.ranger", "regr.ksvm", "regr.glmnet", "regr.cubist")`; see [a complete list of learners available via mlr](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html)) with oblique coordinates (rotated coordinates) as described in Moller et al. (2019) "Oblique Coordinates as Covariates for Digital Soil Mapping" to account for spatial autocorrelation in values. Geographical distances to all points can be added by specifying `buffer.dist=TRUE`.
+(by default landmap uses `c("regr.ranger", "regr.ksvm", "regr.glmnet", "regr.cubist")`; see [a complete list of learners available via mlr](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html)) 
+with oblique coordinates (rotated coordinates) as described in Moller et al. (2019) 
+"Oblique Coordinates as Covariates for Digital Soil Mapping" to account for spatial autocorrelation in 
+values. Geographical distances to ALL points can be added 
+by specifying `buffer.dist=TRUE`; this is however not recommended for large point data sets.
+The meta-learning i.e. the SuperLearner model shows which individual learners are most important:
+
+```r
+m@spModel$learner.model$super.model$learner.model
+```
+```
+Call:  stats::glm(formula = f, family = family, data = d, control = ctrl, 
+    model = FALSE)
+
+Coefficients:
+(Intercept)  regr.ranger    regr.ksvm  regr.glmnet  regr.cubist  
+  -15.79378     -0.06904      1.40024     -0.24365      0.02731  
+
+Degrees of Freedom: 154 Total (i.e. Null);  150 Residual
+Null Deviance:	    1908000 
+Residual Deviance: 1041000 	AIC: 1818
+```
+
+in this case `regr.ksvm` seems to be most important for predicting lead concentration, 
+while `regr.cubist` is the least important. Overall this ensemble model explains ca 45% of variance (based on repeated cross-validation):
+
+```r
+rvar = m@spModel$learner.model$super.model$learner.model$deviance
+tvar = m@spModel$learner.model$super.model$learner.model$null.deviance
+1-rvar/tvar
+```
 
 Next we can generate predictions using:
 
 ```r
 meuse.lead <- predict(m)
 ```
+
+Note that, based on the current set-up with `method = "stack.cv"`, every time you re-run the model training you 
+might get somewhat different models / different betas. On the other hand, the final ensemble predictions (map) should visually not differ too much.
 
 ![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png) *Figure: Predicted lead content for the Meuse data set. Model error is derived as weighted standard deviation from multiple model predictions.*
 

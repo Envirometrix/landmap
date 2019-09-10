@@ -36,12 +36,17 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
   xyn <- attr(covariates@bbox, "dimnames")[[1]]
   if(missing(SL.library)){
     if(is.numeric(Y) & family$family == "gaussian"){
-      SL.library <- c("regr.ranger", "regr.ksvm", "regr.glmnet", "regr.cubist") ## "regr.xgboost", "regr.bartMachine"
+      if(is.null(weights)){
+        SL.library <- c("regr.ranger", "regr.ksvm", "regr.glmnet", "regr.cubist")
+      } else {
+        SL.library <- c("regr.ranger", "regr.xgboost", "regr.nnet")
+      }
       if(missing(predict.type)){ predict.type <- "response" }
     }
     if(is.factor(Y) | family$family == "binomial"){
-      SL.library <- c("classif.ranger", "classif.svm", "classif.multinom")
+      SL.library <- c("classif.ranger", "classif.svm", "classif.xgboost", "classif.nnTrain")
       if(missing(predict.type)){ predict.type <- "prob" }
+      super.learner <- "classif.glmnet"
     }
   }
   if(is.numeric(Y)){
@@ -86,21 +91,30 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
   }
   ## fit the model:
   r.sel <- complete.cases(observations[, all.vars(formulaString)])
+  mlr::configureMlr()
   if(parallel=="multicore"){
     parallelMap::parallelStartSocket(parallel::detectCores())
   }
   message(paste0("Using learners: ", paste(SL.library, collapse = ", "), "..."), immediate. = TRUE)
   if(is.factor(Y) | family$family == "binomial"){
     message("Fitting a spatial learner using 'mlr::makeClassifTask'...", immediate. = TRUE)
-    tsk <- mlr::makeClassifTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn])
+    if(is.null(weights)){
+      tsk <- mlr::makeClassifTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, coordinates = observations[which(r.sel),xyn])
+    } else {
+      tsk <- mlr::makeClassifTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn])
+    }
     lrns <- lapply(SL.library, mlr::makeLearner)
     lrns <- lapply(lrns, setPredictType, "prob")
-    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = "hill.climb", ...)
+    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner)
   } else {
     message("Fitting a spatial learner using 'mlr::makeRegrTask'...", immediate. = TRUE)
-    tsk <- mlr::makeRegrTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn], blocking = id[which(r.sel)])
+    if(is.null(weights)){
+      tsk <- mlr::makeRegrTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, coordinates = observations[which(r.sel),xyn], blocking = id[which(r.sel)])
+    } else {
+      tsk <- mlr::makeRegrTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn], blocking = id[which(r.sel)])
+    }
     lrns <- lapply(SL.library, mlr::makeLearner)
-    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, ...)
+    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner)
   }
   m <- mlr::train(init.m, tsk)
   if(parallel=="multicore"){
@@ -162,7 +176,7 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' library(xgboost)
 #' library(kernlab)
 #' library(mlr)
-#' library(nnet)
+#' library(deepnet)
 #' library(Cubist)
 #' demo(meuse, echo=FALSE)
 #'
@@ -179,8 +193,8 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' ## Classification:
 #' mC <- train.spLearner(meuse["soil"], covariates=meuse.grid[,c("dist","ffreq")])
 #' meuse.soil <- predict(mC)
-#' spplot(meuse.soil$pred[grep("prob.", names(meuse.soil$pred))], col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
-#' spplot(meuse.soil$pred[grep("error.", names(meuse.soil$pred))], col=rev(bpy.colors()))
+#' spplot(meuse.soil$pred[grep("prob.", names(meuse.soil$pred))], col.regions=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
+#' spplot(meuse.soil$pred[grep("error.", names(meuse.soil$pred))], col.regions=rev(bpy.colors()))
 #'
 #' \dontrun{
 #' ## SIC1997
@@ -222,7 +236,6 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' plot(stack(TAXGRSC$pred[grep("prob.", names(TAXGRSC$pred))]), col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
 #' }
 setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", formulaString = "ANY", covariates = "SpatialPixelsDataFrame"), function(observations, formulaString, covariates, SL.library, family = gaussian(), method = "stack.cv", predict.type, super.learner = "regr.glm", subsets = 5, lambda = 0.5, cov.model = "exponential", subsample = 2000, parallel = "multicore", buffer.dist = FALSE, oblique.coords = TRUE, theta.list=seq(0, 180, length.out = 14)*pi/180, spc = TRUE, id = NULL, weights = NULL, ...){
-
   if(missing(formulaString)){
     tv <- names(observations)[1]
     observations <- observations[!is.na(observations@data[,tv]),]
@@ -259,7 +272,7 @@ setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", 
         }
       }
       oblique.xy <- SpatialPixelsDataFrame(covariates@coords, data=as.data.frame(do.call(cbind, oblique.xy)), proj4string = covariates@proj4string)
-      R = expand.grid(c("rX","rY"), round(theta.list,1))
+      R <- expand.grid(c("rX","rY"), round(theta.list, 1))
       names(oblique.xy) <- paste(R$Var1, R$Var2, sep="_")
       covariates <- sp::cbind.Spatial(covariates, oblique.xy)
     }
@@ -337,19 +350,19 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
 #' @export
 #'
 #' @examples
-"print.spLearner" <- function(x, ...){
+"print.spLearner" <- function(object){
   message("Ensemble model:")
-  if(any(class(x@spModel)=="subsemble")){
-    print(x@spModel$metafit$fit)
-    print(paste0("CV R-square: ", (1-x@spModel$metafit$fit$object$deviance/x@spModel$metafit$fit$object$null.deviance)))
+  if(any(class(object@spModel)=="subsemble")){
+    print(object@spModel$metafit$fit)
+    message(paste0("CV R-square:", (1-object@spModel$metafit$fit$object$deviance/object@spModel$metafit$fit$object$null.deviance)))
   }
-  if(any(class(x@spModel)=="BaseEnsembleModel")){
-    print(x@spModel)
+  if(any(class(object@spModel)=="BaseEnsembleModel")){
+    print(object@spModel$learner.model$super.model$learner.model)
+    message(paste0("CV R-square: ", round(1-object@spModel$learner.model$super.model$learner.model$deviance/object@spModel$learner.model$super.model$learner.model$null.deviance, 3)))
   }
   message("Variogram model:")
-  print(x@vgmModel$vgm)
-  message("Total observations:")
-  nrow(x@vgmModel$observations)
+  print(object@vgmModel$vgm)
+  message(paste0("Total observations: ", length(object@vgmModel$observations)))
 }
 
 #' Predict spLearner
@@ -381,7 +394,6 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
         pred <- SpatialPixelsDataFrame(predictionLocations@coords, data=cbind(out$data, data.frame(pred.prob)), grid = predictionLocations@grid, proj4string = predictionLocations@proj4string)
       } else {
         ## weighted Sds where weights are the metalearner coefficients
-        #wt <- abs(object@spModel$metafit$fit$object$coefficients[-1])
         wt <- abs(object@spModel$learner.model$super.model$learner.model$coefficients[-1])
         pred <- SpatialPixelsDataFrame(predictionLocations@coords, data=out$data, grid=predictionLocations@grid, proj4string=predictionLocations@proj4string)
         pred$model.error <- matrixStats::rowWeightedSds(out.c, w=wt, na.rm=TRUE)
@@ -395,4 +407,5 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
   }
 }
 
+setMethod("show", signature(object = "spLearner"), print.spLearner)
 setMethod("predict", signature(object = "spLearner"), predict.spLearner)
