@@ -7,6 +7,7 @@ prediction using **Ensemble Machine Learning** (extends functionality of the [ml
 * `buffer.dist` --- derive buffer (geographical) distances that can be used as covariates in spLearner, 
 * `spc` --- derive Principal Components using stack of spatial layers,
 * `tile` --- tile spatial layers so they can be used to run processing in parallel,
+* `spsample.prob` --- determine inclusion probability / representation of a given point sample based on feature space analysis (maxlike function) and kernel density analysis,
 * `download.landgis` --- access and download LandGIS layers from www.openlandmap.org,
 
 Warning: most of functions are optimized to run in parallel by default. This might result in high RAM and CPU usage.

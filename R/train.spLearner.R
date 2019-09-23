@@ -17,7 +17,7 @@
 #' @param cell.size Block size for spatial Cross-validation,
 #' @param id Id column name to control clusters of data,
 #' @param weights Optional weights (per row) that learners will use to account for variable data quality,
-#' @param ...
+#' @param ... other arguments that can be passed on to \code{mlr::makeStackedLearner},
 #'
 #' @return
 #' @export
@@ -105,7 +105,7 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
     }
     lrns <- lapply(SL.library, mlr::makeLearner)
     lrns <- lapply(lrns, setPredictType, "prob")
-    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner)
+    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, ...)
   } else {
     message("Fitting a spatial learner using 'mlr::makeRegrTask'...", immediate. = TRUE)
     if(is.null(weights)){
@@ -114,7 +114,7 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
       tsk <- mlr::makeRegrTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn], blocking = id[which(r.sel)])
     }
     lrns <- lapply(SL.library, mlr::makeLearner)
-    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner)
+    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, ...)
   }
   m <- mlr::train(init.m, tsk)
   if(parallel=="multicore"){
@@ -148,7 +148,7 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' @param theta.list List of angles (in radians) used to derive oblique coordinates,
 #' @param id Id column name to control clusters of data,
 #' @param weights Optional weights (per row) that learners will use to account for variable data quality,
-#' @param ...
+#' @param ... other arguments that can be passed on to \code{mlr::makeStackedLearner},
 #'
 #' @importClassesFrom sp SpatialPixelsDataFrame SpatialPointsDataFrame
 #'
@@ -358,7 +358,7 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
   }
   if(any(class(object@spModel)=="BaseEnsembleModel")){
     print(object@spModel$learner.model$super.model$learner.model)
-    message(paste0("CV R-square: ", round(1-object@spModel$learner.model$super.model$learner.model$deviance/object@spModel$learner.model$super.model$learner.model$null.deviance, 3)))
+      message(paste0("CV R-square: ", round(1-object@spModel$learner.model$super.model$learner.model$deviance/object@spModel$learner.model$super.model$learner.model$null.deviance, 3)))
   }
   message("Variogram model:")
   print(object@vgmModel$vgm)
