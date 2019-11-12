@@ -23,8 +23,8 @@
 #' @export
 #'
 #' @examples
-train.spLearner.matrix <- function(observations, formulaString, covariates, SL.library, family = gaussian(), method = "stack.cv", predict.type, super.learner = "regr.glm", subsets = 5, lambda = 0.5, cov.model = "exponential", subsample = 5000, parallel = "multicore", cell.size, id = NULL, weights = NULL, ...){
-  if(!.Platform$OS.type=="unix") { parallel <- "seq" }
+train.spLearner.matrix <- function(observations, formulaString, covariates, SL.library, family = gaussian(), method = "stack.cv", predict.type, super.learner, subsets = 5, lambda = 0.5, cov.model = "exponential", subsample = 5000, parallel = "multicore", cell.size, id = NULL, weights = NULL, ...){
+  #if(!.Platform$OS.type=="unix") { parallel <- "seq" }
   tv <- all.vars(formulaString)[1]
   if(family$family == "binomial"){
     observations[,tv] <- as.factor(observations[,tv])
@@ -44,12 +44,12 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
       if(missing(predict.type)){ predict.type <- "response" }
     }
     if(is.factor(Y) | family$family == "binomial"){
-      SL.library <- c("classif.ranger", "classif.svm", "classif.xgboost", "classif.nnTrain")
+      SL.library <- c("classif.ranger", "classif.xgboost", "classif.nnTrain")
       if(missing(predict.type)){ predict.type <- "prob" }
-      super.learner <- "classif.glmnet"
     }
   }
   if(is.numeric(Y)){
+    if(missing(super.learner)){ super.learner <- "regr.glm" }
     ## variogram fitting:
     if(lambda==1){
       ini.var <- var(log1p(Y), na.rm = TRUE)
@@ -68,6 +68,7 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
     rvgm <- fit.vgmModel(formulaString.vgm, rmatrix = observations, predictionDomain = covariates[covs.vgm], lambda = lambda, ini.var = ini.var, cov.model = cov.model, subsample = subsample)
   } else {
     message("Skipping variogram modeling...", immediate. = TRUE)
+    if(missing(super.learner)){ super.learner <- "classif.glmnet" }
     points <- observations
     coordinates(points) <- as.formula(paste("~", paste(xyn, collapse = "+"), sep=""))
     proj4string(points) <- covariates@proj4string
@@ -88,6 +89,7 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
     id[is.na(id)] = "NULL overlay"
     id <- as.factor(id)
     message("Estimating block size ID for spatial Cross Validation...", immediate. = TRUE)
+    r.sp <- as(r.sp, "SpatialPolygonsDataFrame")
   }
   ## fit the model:
   r.sel <- complete.cases(observations[, all.vars(formulaString)])
@@ -98,16 +100,18 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
   message(paste0("Using learners: ", paste(SL.library, collapse = ", "), "..."), immediate. = TRUE)
   if(is.factor(Y) | family$family == "binomial"){
     message("Fitting a spatial learner using 'mlr::makeClassifTask'...", immediate. = TRUE)
+    if(missing(predict.type)){ predict.type = "prob" }
     if(is.null(weights)){
       tsk <- mlr::makeClassifTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, coordinates = observations[which(r.sel),xyn])
     } else {
       tsk <- mlr::makeClassifTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn])
     }
     lrns <- lapply(SL.library, mlr::makeLearner)
-    lrns <- lapply(lrns, setPredictType, "prob")
+    lrns <- lapply(lrns, mlr::setPredictType, "prob")
     init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, ...)
   } else {
     message("Fitting a spatial learner using 'mlr::makeRegrTask'...", immediate. = TRUE)
+    if(missing(predict.type)){ predict.type = "response" }
     if(is.null(weights)){
       tsk <- mlr::makeRegrTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, coordinates = observations[which(r.sel),xyn], blocking = id[which(r.sel)])
     } else {
@@ -191,7 +195,9 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' points(meuse, pch="+")
 #'
 #' ## Classification:
-#' mC <- train.spLearner(meuse["soil"], covariates=meuse.grid[,c("dist","ffreq")])
+#' SL.library <- c("classif.ranger", "classif.xgboost", "classif.nnTrain")
+#' mC <- train.spLearner(meuse["soil"], covariates=meuse.grid[,c("dist","ffreq")],
+#'    SL.library = SL.library, super.learner = "classif.glmnet")
 #' meuse.soil <- predict(mC)
 #' spplot(meuse.soil$pred[grep("prob.", names(meuse.soil$pred))], col.regions=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
 #' spplot(meuse.soil$pred[grep("error.", names(meuse.soil$pred))], col.regions=rev(bpy.colors()))
@@ -248,6 +254,7 @@ setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", 
         flev[which(!observations@data[,1] %in% selg.levs)] <- NA
         observations@data[,1] <- droplevels(flev)
       }
+      if(missing(predict.type)){ predict.type  <- "prob" }
     }
     if(spc==TRUE&ncol(covariates)>1){
       covariates <- spc(covariates)@predicted
@@ -292,7 +299,7 @@ setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", 
   if(!n.r.sel==nrow(observations)){
     message(paste0("Subsetting observations to ", round(n.r.sel/nrow(observations), 2)*100, "% complete cases..."), immediate. = TRUE)
   }
-  m <- train.spLearner.matrix(observations = ov, formulaString = formulaString, covariates = covariates, SL.library = SL.library, family = family, subsets = subsets, lambda = lambda, cov.model = cov.model, subsample = subsample, parallel = parallel, id=id, weights=weights, ...)
+  m <- train.spLearner.matrix(observations = ov, formulaString = formulaString, covariates = covariates, SL.library = SL.library, family = family, subsets = subsets, lambda = lambda, cov.model = cov.model, subsample = subsample, parallel = parallel, id=id, weights=weights, predict.type = predict.type, ...)
  return(m)
 })
 
