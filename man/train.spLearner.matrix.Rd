@@ -7,7 +7,7 @@ from a regression/classification matrix}
 \usage{
 train.spLearner.matrix(observations, formulaString, covariates, SL.library,
   family = gaussian(), method = "stack.cv", predict.type,
-  super.learner = "regr.glm", subsets = 5, lambda = 0.5,
+  super.learner, subsets = 5, lambda = 0.5,
   cov.model = "exponential", subsample = 5000,
   parallel = "multicore", cell.size, id = NULL, weights = NULL, ...)
 }
@@ -44,7 +44,7 @@ train.spLearner.matrix(observations, formulaString, covariates, SL.library,
 
 \item{weights}{Optional weights (per row) that learners will use to account for variable data quality,}
 
-\item{...}{}
+\item{...}{other arguments that can be passed on to \code{mlr::makeStackedLearner},}
 }
 \description{
 Train a spatial prediction and/or interpolation model using Ensemble Machine Learning

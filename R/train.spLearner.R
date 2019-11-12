@@ -89,7 +89,6 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
     id[is.na(id)] = "NULL overlay"
     id <- as.factor(id)
     message("Estimating block size ID for spatial Cross Validation...", immediate. = TRUE)
-    r.sp <- as(r.sp, "SpatialPolygonsDataFrame")
   }
   ## fit the model:
   r.sel <- complete.cases(observations[, all.vars(formulaString)])

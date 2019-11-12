@@ -51,7 +51,7 @@
 
 \item{weights}{Optional weights (per row) that learners will use to account for variable data quality,}
 
-\item{...}{}
+\item{...}{other arguments that can be passed on to \code{mlr::makeStackedLearner},}
 }
 \value{
 object of class spLearner, which contains fitted model, variogram model and spatial grid
@@ -93,7 +93,9 @@ plot(raster(meuse.lead$pred["model.error"]), col=rev(bpy.colors()), main="Model 
 points(meuse, pch="+")
 
 ## Classification:
-mC <- train.spLearner(meuse["soil"], covariates=meuse.grid[,c("dist","ffreq")])
+SL.library <- c("classif.ranger", "classif.xgboost", "classif.nnTrain")
+mC <- train.spLearner(meuse["soil"], covariates=meuse.grid[,c("dist","ffreq")],
+   SL.library = SL.library, super.learner = "classif.glmnet")
 meuse.soil <- predict(mC)
 spplot(meuse.soil$pred[grep("prob.", names(meuse.soil$pred))], col.regions=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
 spplot(meuse.soil$pred[grep("error.", names(meuse.soil$pred))], col.regions=rev(bpy.colors()))
