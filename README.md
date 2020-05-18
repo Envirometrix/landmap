@@ -122,14 +122,14 @@ meuse.lead <- predict(m)
 Note that, based on the current set-up with `method = "stack.cv"`, every time you re-run the model training you 
 might get somewhat different models / different betas. On the other hand, the final ensemble predictions (map) should visually not differ too much.
 
-<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png" width="650"> 
-*Figure: Predicted lead content for the Meuse data set. Model error is derived as weighted standard deviation from multiple model predictions.*
+<center><img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png" width="650"></center> 
+<center>*Figure: Predicted lead content for the Meuse data set. Model error is derived as weighted standard deviation from multiple model predictions.*</center>
 
 Animated predictions by 9 models (3x independently fitted random forest, SVM and Xgboost) looks like this 
 (the coefficients are beta coefficients from the metalearner fit: the higher the coefficient, more important the model for the ensemble merge):
 
-<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/meuse_lead_ensemble.gif" width="400" />
-*Figure: examples of independently generated predictions.*
+<center><img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/meuse_lead_ensemble.gif" width="400" /></center>
+<center>*Figure: examples of independently generated predictions.*</center>
 
 The predictions shown in the image above incorporate spatial correlation between values, 
 and hence can be used as a possible replacement for kriging methods ([Hengl et al. 2018](https://doi.org/10.7717/peerj.5518)). Automation comes, however, at the high computing and RAM usage costs.
@@ -149,8 +149,8 @@ At the moment, using `train.spLearner` for point data set with >>1000 points sho
 
 The final results also shows quite similar results to universal kriging in [geoR](http://leg.ufpr.br/~paulojus/geoR/). The model error map above, however, shows more spatial contrast and helps detect areas of especially high errors.
 
-<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/rainfall/Fig_SIC1997_EML.png" width="900"> 
-*Figure: Predicted daily rainfall for the SIC1997 data set.*
+<center><img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/rainfall/Fig_SIC1997_EML.png" width="900"></center> 
+<center>*Figure: Predicted daily rainfall for the SIC1997 data set.*</center>
 
 The same function can also be used to interpolate factor-type variables:
 
@@ -167,8 +167,8 @@ mF <- train.spLearner(eberg["TAXGRSC"], covariates=X, buffer.dist=FALSE)
 TAXGRSC <- predict(mF)
 ```
 
-<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/eberg/predicted_classes_eberg.png" width="900"> 
-*Figure: Predicted Ebergotzen soil types (probabilities).*
+<center><img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/eberg/predicted_classes_eberg.png" width="900"></center> 
+<center>*Figure: Predicted Ebergotzen soil types (probabilities).*</center>
 
 Note that in the case of factor variables, prediction are based on ensemble stacking
 based on the following three classification algorithms `c("classif.ranger", "classif.multinom", "classif.svm")`. See mlr documentation on how to add additional [learners](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html).
@@ -220,8 +220,8 @@ swiss1km.ll1km$clay_10..10cm <- ifelse(is.na(swiss1km.ll1km$DEM), NA, swiss1km.l
 mapview(swiss1km.ll1km["clay_10..10cm"])
 ```
 
-<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/rainfall/Fig_download_LandGIS_swiss1km.jpg" width="650"> 
-*Figure: Clay content map for Switzerland.*
+<center><img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/rainfall/Fig_download_LandGIS_swiss1km.jpg" width="650"></center> 
+<center>*Figure: Clay content map for Switzerland.*</center>
 
 This takes few steps because you have to determine:
 
