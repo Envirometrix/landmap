@@ -4,11 +4,33 @@
 \alias{makeTiles}
 \title{Make a tiling system from a bounding box}
 \usage{
-makeTiles(bb, block.x, block.y, overlap.percent, limit.bbox,
-  columns = NULL, rows = NULL)
+makeTiles(
+  bb,
+  block.x,
+  block.y,
+  overlap.percent,
+  limit.bbox,
+  columns = NULL,
+  rows = NULL
+)
 }
 \arguments{
-\item{rows}{}
+\item{bb}{Bounding Box}
+
+\item{block.x}{Size of the block in X}
+
+\item{block.y}{Size of the block in Y}
+
+\item{overlap.percent}{Percent of overlap; default 0}
+
+\item{limit.bbox}{Optional limiting bounding box}
+
+\item{columns}{Optional number of columns}
+
+\item{rows}{Optional number of rows}
+}
+\value{
+
 }
 \description{
 Make a tiling system from a bounding box

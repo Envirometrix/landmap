@@ -9,8 +9,6 @@
 #'
 #' @return
 #' @export
-#'
-#' @examples
 setClass("spLearner", slots = c(spModel = "ANY", vgmModel = "list", covariates = "SpatialPixelsDataFrame", spID = "SpatialGridDataFrame"), validity = function(object) {
     if(!class(object@vgmModel$observations)=="SpatialPointsDataFrame")
       return("Expecting an object of class 'SpatialPointsDataFrame'")
@@ -30,8 +28,6 @@ setClass("spLearner", slots = c(spModel = "ANY", vgmModel = "list", covariates =
 #'
 #' @return
 #' @export
-#'
-#' @examples
 setClass("SpatialComponents", representation (predicted = "SpatialPixelsDataFrame", pca = "list"), validity = function(object) {
    cnames <- attr(object@pca$rotation, "dimnames")[[1]]
    pnames <- attr(object@pca$rotation, "dimnames")[[2]]
@@ -55,8 +51,6 @@ setClass("SpatialComponents", representation (predicted = "SpatialPixelsDataFram
 #'
 #' @return
 #' @export
-#'
-#' @examples
 setClass("SpatialMemberships", representation (predicted = "SpatialPixelsDataFrame", model = "list", mu = "SpatialPixelsDataFrame", class.c = "matrix", class.sd = "matrix", confusion = "ANY"), validity = function(object) {
    ## check if column names match:
    if(!all(row.names(object@class.c) %in% levels(object@predicted@data[,1])))

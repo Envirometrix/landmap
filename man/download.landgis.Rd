@@ -4,10 +4,16 @@
 \alias{download.landgis}
 \title{Access and download layers from OpenLandMap.org (LandGIS data service)}
 \usage{
-download.landgis(coverageId, filename, scalefactor = NULL,
+download.landgis(
+  coverageId,
+  filename,
+  scalefactor = NULL,
   subset = NULL,
-  service = "https://geoserver.opengeohub.org/landgisgeoserver/ows?service=WCS&version=2.0.1",
-  silent = TRUE, ...)
+ 
+    service = "https://geoserver.opengeohub.org/landgisgeoserver/ows?service=WCS&version=2.0.1",
+  silent = TRUE,
+  ...
+)
 }
 \arguments{
 \item{coverageId}{Coverage ID.}

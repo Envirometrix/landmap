@@ -4,12 +4,21 @@
 \alias{search.landgis}
 \title{Search for available landgis layers}
 \usage{
-search.landgis(pattern,
+search.landgis(
+  pattern,
   layersURL = "https://landgisapi.opengeohub.org/query/layers",
-  update = FALSE)
+  update = FALSE
+)
 }
 \arguments{
-\item{update}{}
+\item{pattern}{String pattern}
+
+\item{layersURL}{Default URL with the list of layers}
+
+\item{update}{Logical specify to update the layer list}
+}
+\value{
+
 }
 \description{
 Search for available landgis layers

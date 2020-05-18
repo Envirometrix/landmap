@@ -4,6 +4,9 @@
 \name{SpatialMemberships-class}
 \alias{SpatialMemberships-class}
 \title{SpatialMemberships class}
+\value{
+
+}
 \description{
 SpatialMemberships class
 }

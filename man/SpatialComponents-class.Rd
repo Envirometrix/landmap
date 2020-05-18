@@ -4,6 +4,9 @@
 \name{SpatialComponents-class}
 \alias{SpatialComponents-class}
 \title{Spatial Principal Components class}
+\value{
+
+}
 \description{
 Spatial Principal Components class
 }

@@ -7,7 +7,12 @@
 \method{print}{spLearner}(object)
 }
 \arguments{
-\item{...}{}
+\item{object}{of type \code{spLearner}}
+
+\item{...}{optional parameters}
+}
+\value{
+
 }
 \description{
 Print object of type 'spLearner'

@@ -4,10 +4,25 @@
 \alias{predict.spLearner}
 \title{Predict spLearner}
 \usage{
-predict.spLearner(object, predictionLocations, model.error = TRUE, ...)
+predict.spLearner(
+  object,
+  predictionLocations,
+  model.error = TRUE,
+  error.type = c("weighted.sd", "interval")[1],
+  w,
+  ...
+)
 }
 \arguments{
-\item{...}{}
+\item{object}{of type \code{spLearner}}
+
+\item{predictionLocations}{\code{SpatialPixelsDataFrame} with all variables}
+
+\item{model.error}{Logical speficy if prediction errors should be derived}
+
+\item{error.type}{Specify how should be the prediction error be derived}
+
+\item{...}{optional parameters}
 }
 \value{
 SpatialPixelsDataFrame object with predictions and model error.

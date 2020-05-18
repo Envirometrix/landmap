@@ -78,36 +78,40 @@ Stopped parallelization. All cleaned up.
 The variogram model is only fitted to estimate effective range of spatial dependence.
 Spatial Prediction models are based only on fitting the [Ensemble Machine Learning](https://koalaverse.github.io/machine-learning-in-R/stacking.html#stacking-software-in-r) 
 (by default landmap uses `c("regr.ranger", "regr.ksvm", "regr.glmnet", "regr.cubist")`; see [a complete list of learners available via mlr](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html)) 
-with oblique coordinates (rotated coordinates) as described in Moller et al. (2019) 
-"Oblique Coordinates as Covariates for Digital Soil Mapping" to account for spatial autocorrelation in 
+with oblique coordinates (rotated coordinates) as described in [Moller et al. (2019) 
+"Oblique Coordinates as Covariates for Digital Soil Mapping"](https://www.soil-discuss.net/soil-2019-83/) to account for spatial autocorrelation in 
 values. Geographical distances to ALL points can be added 
 by specifying `buffer.dist=TRUE`; this is however not recommended for large point data sets.
 The meta-learning i.e. the SuperLearner model shows which individual learners are most important:
 
 ```r
-m@spModel$learner.model$super.model$learner.model
+summary(m@spModel$learner.model$super.model$learner.model)
 ```
 ```
-Call:  stats::glm(formula = f, family = family, data = d, control = ctrl, 
-    model = FALSE)
+Call:
+stats::lm(formula = f, data = d)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-173.960  -35.549   -6.493   16.507  308.414 
 
 Coefficients:
-(Intercept)  regr.ranger    regr.ksvm  regr.glmnet  regr.cubist  
-  -15.79378     -0.06904      1.40024     -0.24365      0.02731  
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -15.65153   13.62986  -1.148    0.253    
+regr.ranger   0.91523    0.21575   4.242 3.86e-05 ***
+regr.ksvm     0.33415    0.24691   1.353    0.178    
+regr.glmnet   0.01482    0.15172   0.098    0.922    
+regr.cubist  -0.13882    0.13639  -1.018    0.310    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Degrees of Freedom: 154 Total (i.e. Null);  150 Residual
-Null Deviance:	    1908000 
-Residual Deviance: 1041000 	AIC: 1818
+Residual standard error: 72.28 on 150 degrees of freedom
+Multiple R-squared:  0.5894,	Adjusted R-squared:  0.5784 
+F-statistic: 53.82 on 4 and 150 DF,  p-value: < 2.2e-16
 ```
 
-in this case `regr.ksvm` seems to be most important for predicting lead concentration, 
-while `regr.cubist` is the least important. Overall this ensemble model explains ca 45% of variance (based on repeated cross-validation):
-
-```r
-rvar = m@spModel$learner.model$super.model$learner.model$deviance
-tvar = m@spModel$learner.model$super.model$learner.model$null.deviance
-1-rvar/tvar
-```
+in this case `regr.ranger` seems to be most important for predicting lead concentration, 
+while `regr.glmnet` is the least important. Overall this ensemble model explains ca 58% of variance (based on repeated cross-validation):
 
 Next we can generate predictions using:
 
@@ -118,12 +122,14 @@ meuse.lead <- predict(m)
 Note that, based on the current set-up with `method = "stack.cv"`, every time you re-run the model training you 
 might get somewhat different models / different betas. On the other hand, the final ensemble predictions (map) should visually not differ too much.
 
-![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png) *Figure: Predicted lead content for the Meuse data set. Model error is derived as weighted standard deviation from multiple model predictions.*
+<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png" width="650"> 
+*Figure: Predicted lead content for the Meuse data set. Model error is derived as weighted standard deviation from multiple model predictions.*
 
 Animated predictions by 9 models (3x independently fitted random forest, SVM and Xgboost) looks like this 
 (the coefficients are beta coefficients from the metalearner fit: the higher the coefficient, more important the model for the ensemble merge):
 
 <img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/meuse_lead_ensemble.gif" width="400" />
+*Figure: examples of independently generated predictions.*
 
 The predictions shown in the image above incorporate spatial correlation between values, 
 and hence can be used as a possible replacement for kriging methods ([Hengl et al. 2018](https://doi.org/10.7717/peerj.5518)). Automation comes, however, at the high computing and RAM usage costs.
@@ -143,7 +149,8 @@ At the moment, using `train.spLearner` for point data set with >>1000 points sho
 
 The final results also shows quite similar results to universal kriging in [geoR](http://leg.ufpr.br/~paulojus/geoR/). The model error map above, however, shows more spatial contrast and helps detect areas of especially high errors.
 
-![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/rainfall/Fig_SIC1997_EML.png) *Figure: Predicted daily rainfall for the SIC1997 data set.*
+<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/rainfall/Fig_SIC1997_EML.png" width="900"> 
+*Figure: Predicted daily rainfall for the SIC1997 data set.*
 
 The same function can also be used to interpolate factor-type variables:
 
@@ -160,7 +167,8 @@ mF <- train.spLearner(eberg["TAXGRSC"], covariates=X, buffer.dist=FALSE)
 TAXGRSC <- predict(mF)
 ```
 
-![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/eberg/predicted_classes_eberg.png) *Figure: Predicted Ebergotzen soil types (probabilities).*
+<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/eberg/predicted_classes_eberg.png" width="900"> 
+*Figure: Predicted Ebergotzen soil types (probabilities).*
 
 Note that in the case of factor variables, prediction are based on ensemble stacking
 based on the following three classification algorithms `c("classif.ranger", "classif.multinom", "classif.svm")`. See mlr documentation on how to add additional [learners](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html).
@@ -212,7 +220,8 @@ swiss1km.ll1km$clay_10..10cm <- ifelse(is.na(swiss1km.ll1km$DEM), NA, swiss1km.l
 mapview(swiss1km.ll1km["clay_10..10cm"])
 ```
 
-![figure](https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/rainfall/Fig_download_LandGIS_swiss1km.jpg) *Figure: Clay content map for Switzerland.*
+<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/rainfall/Fig_download_LandGIS_swiss1km.jpg" width="650"> 
+*Figure: Clay content map for Switzerland.*
 
 This takes few steps because you have to determine:
 

@@ -4,6 +4,9 @@
 \name{spLearner-class}
 \alias{spLearner-class}
 \title{Spatial Prediction Learner class}
+\value{
+
+}
 \description{
 Spatial Prediction Learner class
 }

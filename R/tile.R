@@ -18,8 +18,6 @@
 #' @export
 #'
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
-#'
-#' @examples
 setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file = TRUE, program, show.output.on.console = FALSE, ...){
 
   if(filename(x)==""){

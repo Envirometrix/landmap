@@ -6,8 +6,6 @@
 #'
 #' @return
 #' @export
-#'
-#' @examples
 setMethod("spmultinom", signature(formulaString = "formula", observations = "SpatialPointsDataFrame", covariates = "SpatialPixelsDataFrame"), function(formulaString, observations, covariates, class.stats = TRUE, predict.probs = TRUE, ...){
 
   ## generate formula if missing:

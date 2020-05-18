@@ -81,8 +81,6 @@ setMethod("getSpatialTiles", signature(obj = "Spatial"), function(obj, block.x, 
 #'
 #' @return
 #' @export
-#'
-#' @examples
 setMethod("getSpatialTiles", signature(obj = "ANY"), function(obj, block.x, block.y = block.x, overlap.percent = 0, limit.bbox = TRUE, return.SpatialPolygons = FALSE){
 
   if(!class(obj)=="GDALobj"){

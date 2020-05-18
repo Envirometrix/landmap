@@ -1,19 +1,17 @@
 #' Make a tiling system from a bounding box
 #'
-#' @param bb
-#' @param block.x
-#' @param block.y
-#' @param overlap.percent
-#' @param limit.bbox
-#' @param columns
-#' @param rows
+#' @param bb Bounding Box
+#' @param block.x Size of the block in X
+#' @param block.y Size of the block in Y
+#' @param overlap.percent Percent of overlap; default 0
+#' @param limit.bbox Optional limiting bounding box
+#' @param columns Optional number of columns
+#' @param rows Optional number of rows
 #'
 #' @return
 #' @export
 #'
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
-#'
-#' @examples
 makeTiles <- function(bb, block.x, block.y, overlap.percent, limit.bbox, columns = NULL, rows = NULL){
 
   ## number of tiles:

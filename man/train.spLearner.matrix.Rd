@@ -5,11 +5,25 @@
 \title{Train a spatial prediction and/or interpolation model using Ensemble Machine Learning
 from a regression/classification matrix}
 \usage{
-train.spLearner.matrix(observations, formulaString, covariates, SL.library,
-  family = gaussian(), method = "stack.cv", predict.type,
-  super.learner, subsets = 5, lambda = 0.5,
-  cov.model = "exponential", subsample = 5000,
-  parallel = "multicore", cell.size, id = NULL, weights = NULL, ...)
+train.spLearner.matrix(
+  observations,
+  formulaString,
+  covariates,
+  SL.library,
+  family = gaussian(),
+  method = "stack.cv",
+  predict.type,
+  super.learner,
+  subsets = 5,
+  lambda = 0.5,
+  cov.model = "exponential",
+  subsample = 10000,
+  parallel = "multicore",
+  cell.size,
+  id = NULL,
+  weights = NULL,
+  ...
+)
 }
 \arguments{
 \item{observations}{Data frame regression matrix,}
@@ -26,7 +40,7 @@ train.spLearner.matrix(observations, formulaString, covariates, SL.library,
 
 \item{predict.type}{Prediction type 'prob' or 'response',}
 
-\item{super.learner}{Ensemble stacking model usually \code{regr.glm},}
+\item{super.learner}{Ensemble stacking model usually \code{regr.lm},}
 
 \item{subsets}{Number of subsets for repeated CV,}
 
@@ -46,7 +60,13 @@ train.spLearner.matrix(observations, formulaString, covariates, SL.library,
 
 \item{...}{other arguments that can be passed on to \code{mlr::makeStackedLearner},}
 }
+\value{
+Object of class \code{spLearner}
+}
 \description{
 Train a spatial prediction and/or interpolation model using Ensemble Machine Learning
 from a regression/classification matrix
+}
+\author{
+\href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
 }

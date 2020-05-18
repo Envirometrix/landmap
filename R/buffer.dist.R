@@ -11,6 +11,12 @@
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
 #'
 #' @examples
+#' \dontrun{
+#' library(raster)
+#' library(rgdal)
+#' demo(meuse, echo=FALSE)
+#' b <- buffer.dist(meuse["zinc"], meuse.grid[1], classes=as.factor(1:nrow(meuse)))
+#' }
 setMethod("buffer.dist", signature(observations = "SpatialPointsDataFrame", predictionDomain = "SpatialPixelsDataFrame"), function(observations, predictionDomain, classes, width, parallel=TRUE, ...){
 
   ## check classes

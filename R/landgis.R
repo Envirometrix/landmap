@@ -50,14 +50,12 @@ download.landgis <- function(coverageId, filename, scalefactor=NULL, subset=NULL
 
 #' Search for available landgis layers
 #'
-#' @param pattern
-#' @param layersURL
-#' @param update
+#' @param pattern String pattern
+#' @param layersURL Default URL with the list of layers
+#' @param update Logical specify to update the layer list
 #'
 #' @return
 #' @export
-#'
-#' @examples
 search.landgis <- function(pattern, layersURL="https://landgisapi.opengeohub.org/query/layers", update=FALSE){
   #pattern=c("clay", "10..10cm")
   data("landgis.tables")

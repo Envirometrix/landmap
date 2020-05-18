@@ -3,7 +3,6 @@
 \docType{package}
 \name{landmap}
 \alias{landmap}
-\alias{landmap-package}
 \title{landmap: Automated spatial prediction and/or interpolation using Ensemble Machine Learning}
 \description{
 Geographical distances can be used with remote sensing covariates and process-based derivatives

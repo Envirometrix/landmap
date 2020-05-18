@@ -4,11 +4,24 @@
 \alias{model.data}
 \title{Overlay points and grids and prepare regression matrix}
 \usage{
-model.data(observations, formulaString, covariates, dimensions = c("2D",
-  "3D", "2D+T", "3D+T"))
+model.data(
+  observations,
+  formulaString,
+  covariates,
+  dimensions = c("2D", "3D", "2D+T", "3D+T")
+)
 }
 \arguments{
-\item{dimensions}{}
+\item{observations}{SpatialPointsDataFrame}
+
+\item{formulaString}{Model definition}
+
+\item{covariates}{List of covariates column names}
+
+\item{dimensions}{2D, 3D models}
+}
+\value{
+Regression matrix data.frame
 }
 \description{
 Overlay points and grids and prepare regression matrix

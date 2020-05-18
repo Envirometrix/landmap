@@ -11,8 +11,14 @@
 #'
 #' @note Extends variogram fitting functionality from the geoR package.
 #' Can be used for 2D or 3D point data sets, with and without trend variables.
+#' Models need to be in the form \code{zinc ~ dist} and only numeric variables are allowed.
 #'
 #' @examples
+#' library(raster)
+#' library(rgdal)
+#' library(geoR)
+#' demo(meuse, echo=FALSE)
+#' vgm = fit.vgmModel(zinc~dist, as.data.frame(meuse), meuse.grid["dist"], lambda=1)
 setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "data.frame", predictionDomain = "SpatialPixelsDataFrame"), function(formulaString.vgm, rmatrix, predictionDomain, cov.model = "exponential", dimensions = list("2D", "3D", "2D+T", "3D+T"), lambda = 0.5, psiR = NULL, subsample = nrow(rmatrix), ini.var, ini.range, fix.psiA = FALSE, fix.psiR = FALSE, ...){
 
   if(missing(dimensions)){ dimensions <- dimensions[[1]] }
@@ -24,7 +30,11 @@ setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "da
   tv <- all.vars(formulaString.vgm)[1]
   if(!is.numeric(rmatrix[,tv])){ stop("Numeric variable expected for 'fit.vgmModel'") }
   if(length(all.vars(formulaString.vgm))>1){
-    tcovs <- as.formula(paste(" ~ ", paste(all.vars(formulaString.vgm)[-1], collapse = "+")))
+    if(length(all.vars(formulaString.vgm))==2){
+      tcovs <- as.formula(paste(" ~ ", all.vars(formulaString.vgm)[2]))
+    } else {
+      tcovs <- as.formula(paste(" ~ ", paste(all.vars(formulaString.vgm)[-1], collapse = "+")))
+    }
   }
   sel.r <- complete.cases(lapply(all.vars(formulaString.vgm), function(x){rmatrix[,x]}))
   if(!sum(sel.r)==nrow(rmatrix)){ rmatrix <- rmatrix[sel.r,] }
@@ -47,9 +57,10 @@ setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "da
     message(paste0("Subsetting observations to ", signif(pcnt*100, 1), "%..."))
     rmatrix <- rmatrix[runif(nrow(rmatrix))<pcnt,]
   }
-  x.geo <- geoR::as.geodata(rmatrix[,tv])
   if(length(all.vars(formulaString.vgm))>1){
-    x.geo$covariate <- rmatrix@data[,all.vars(formulaString.vgm)[-1]]
+    x.geo <- geoR::as.geodata(rmatrix[c(tv, all.vars(formulaString.vgm)[-1])], data.col=tv, covar.col=all.vars(formulaString.vgm)[-1])
+  } else {
+    x.geo <- geoR::as.geodata(rmatrix, data.col=tv)
   }
   if(!cov.model == "nugget"){
     ## guess the dimensions:
@@ -98,11 +109,11 @@ setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "da
     ## fit sample variogram:
     rvgm <- list(cov.model="nugget", lambda=lambda, practicalRange=ini.range)
     if(length(all.vars(formulaString.vgm))==1){
-      try( rvgm <- geoR::likfit(x.geo, lambda = lambda, messages = FALSE, ini = c(ini.var, ini.range), cov.model = cov.model) )
       message("Fitting a variogram using 'linkfit'...", immediate. = TRUE)
+      try( rvgm <- geoR::likfit(x.geo, lambda = lambda, messages = FALSE, ini = c(ini.var, ini.range), cov.model = cov.model) )
     } else {
-      try( rvgm <- geoR::likfit(x.geo, lambda = lambda, messages = FALSE, trend = tcovs, ini = c(ini.var, ini.range), fix.psiA = FALSE, fix.psiR = FALSE, cov.model = cov.model) )
       message("Fitting a variogram using 'linkfit' and trend model...", immediate. = TRUE)
+      try( rvgm <- geoR::likfit(x.geo, lambda = lambda, messages = FALSE, trend = tcovs, ini = c(ini.var, ini.range), fix.psiA = FALSE, fix.psiR = FALSE, cov.model = cov.model) )
     }
     if(class(.Last.value)[1]=="try-error"){
       warning("Variogram model could not be fitted.")
