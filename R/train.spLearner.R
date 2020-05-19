@@ -211,9 +211,11 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' mR <- train.spLearner(sic1997$daily.rainfall, covariates=X, lambda=1)
 #' rainfall1km <- predict(mR)
 #' par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
-#' plot(raster(rainfall1km$pred["response"]), col=R_pal[["rainbow_75"]][4:20], main="spLearner", axes=FALSE, box=FALSE)
+#' plot(raster(rainfall1km$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
+#'     main="spLearner", axes=FALSE, box=FALSE)
 #' points(sic1997$daily.rainfall, pch="+")
-#' plot(raster(rainfall1km$pred["model.error"]), col=rev(bpy.colors()), main="Model error", axes=FALSE, box=FALSE)
+#' plot(raster(rainfall1km$pred["model.error"]), col=rev(bpy.colors()),
+#'     main="Model error", axes=FALSE, box=FALSE)
 #' points(sic1997$daily.rainfall, pch="+")
 #'
 #' ## Ebergotzen data set
@@ -229,9 +231,11 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' summary(eberg$TAXGRSC)
 #' eberg$Parabraunerde <- ifelse(eberg$TAXGRSC=="Parabraunerde", 1, 0)
 #' X <- eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")]
-#' mB <- train.spLearner(eberg["Parabraunerde"], covariates=X, family=binomial(), cov.model = "nugget")
+#' mB <- train.spLearner(eberg["Parabraunerde"], covariates=X,
+#'    family=binomial(), cov.model = "nugget")
 #' eberg.Parabraunerde <- predict(mB)
-#' plot(raster(eberg.Parabraunerde$pred["prob.1"]), col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
+#' plot(raster(eberg.Parabraunerde$pred["prob.1"]),
+#'    col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
 #' points(eberg["Parabraunerde"], pch="+")
 #'
 #' ## Factor variable:
@@ -241,7 +245,10 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' X <- eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")]
 #' mF <- train.spLearner(eberg["TAXGRSC"], covariates=X)
 #' TAXGRSC <- predict(mF)
-#' plot(stack(TAXGRSC$pred[grep("prob.", names(TAXGRSC$pred))]), col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
+#' plot(stack(TAXGRSC$pred[grep("prob.", names(TAXGRSC$pred))]),
+#'     col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
+#' plot(stack(TAXGRSC$pred[grep("error.", names(TAXGRSC$pred))]),
+#'     col=SAGA_pal[["SG_COLORS_YELLOW_BLUE"]], zlim=c(0,0.45))
 #' }
 #' @export
 setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", formulaString = "ANY", covariates = "SpatialPixelsDataFrame"), function(observations, formulaString, covariates, SL.library, family = gaussian(), method = "stack.cv", predict.type, super.learner = "regr.lm", subsets = 5, lambda = 0.5, cov.model = "exponential", subsample = 10000, parallel = "multicore", buffer.dist = FALSE, oblique.coords = TRUE, theta.list=seq(0, 180, length.out = 14)*pi/180, spc = TRUE, id = NULL, weights = NULL, ...){
