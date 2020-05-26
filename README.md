@@ -1,5 +1,9 @@
 # landmap package for R
 
+[![Build Status](https://travis-ci.org/Envirometrix/landmap.svg?branch=master)](https://travis-ci.org/Envirometrix/landmap)
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/landmap)](https://cran.r-project.org/package=landmap)
+[![Github_Status_Badge](https://img.shields.io/badge/Github-0.0--3-blue.svg)](https://github.com/Envirometrix/landmap)
+
 Package provides methodology for automated mapping i.e. spatial interpolation and/or 
 prediction using **Ensemble Machine Learning** (extends functionality of the [mlr package](https://mlr.mlr-org.com/)). Key functionality includes:
 

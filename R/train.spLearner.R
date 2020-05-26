@@ -198,7 +198,7 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #'
 #' ## Classification:
 #' SL.library <- c("classif.ranger", "classif.xgboost", "classif.nnTrain")
-  #' mC <- train.spLearner(meuse["soil"], covariates=meuse.grid[,c("dist","ffreq")],
+#' mC <- train.spLearner(meuse["soil"], covariates=meuse.grid[,c("dist","ffreq")],
 #'    SL.library = SL.library, super.learner = "classif.glmnet")
 #' meuse.soil <- predict(mC)
 #' spplot(meuse.soil$pred[grep("prob.", names(meuse.soil$pred))], col.regions=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
