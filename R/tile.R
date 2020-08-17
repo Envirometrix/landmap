@@ -1,6 +1,15 @@
 #' Tile spatial layers
 #'
+#' @aliases tile tile,SpatialLinesDataFrame-method tile,SpatialPixelsDataFrame-method tile,SpatialPointsDataFrame-method tile,SpatialPolygonsDataFrame-method
+#' @rdname tile-methods
+#'
 #' @param x RasterLayer.
+#' @param y either points, pixels, polygons or lines.
+#' @param block.x size of the block in x direction.
+#' @param tmp.file temporary file name.
+#' @param show.output.on.console shows progress.
+#' @param program optional location of the gdalwarp.
+#' @param ... optional argument.
 #'
 #' @usage
 #' \S4method{tile}{SpatialPointsDataFrame}(x, y, block.x, \dots)
@@ -14,13 +23,14 @@
 #'
 #' @importClassesFrom raster RasterLayer
 #'
-#' @return
-#' @export
+#' @return Regular tiling system
 #'
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#' @export
+#' @docType methods
 setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file = TRUE, program, show.output.on.console = FALSE, ...){
 
-  if(filename(x)==""){
+  if(raster::filename(x)==""){
     stop("Function applicable only to 'RasterLayer' objects linking to external raster files")
   }
 
@@ -29,8 +39,8 @@ setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file
   }
 
   if(missing(y)){
-    b <- bbox(x)
-    pol <- SpatialPolygons(list(Polygons(list(Polygon(matrix(c(b[1,1], b[1,1], b[1,2], b[1,2], b[1,1], b[2,1], b[2,2], b[2,2], b[2,1], b[2,1]), ncol=2))), ID="1")), proj4string=CRS(proj4string(x)))
+    b <- sp::bbox(x)
+    pol <- sp::SpatialPolygons(list(sp::Polygons(list(sp::Polygon(matrix(c(b[1,1], b[1,1], b[1,2], b[1,2], b[1,1], b[2,1], b[2,2], b[2,2], b[2,1], b[2,1]), ncol=2))), ID="1")), proj4string=sp::CRS(sp::proj4string(x)))
     y <- getSpatialTiles(pol, block.x = block.x, return.SpatialPolygons = FALSE, ...)
   }
   ## gdalwarp by tiles:
@@ -40,10 +50,10 @@ setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file
     if(tmp.file==TRUE){
       outname <- tempfile()
     } else {
-      outname <- paste(normalizeFilename(deparse(substitute(x, env = parent.frame()))), j, sep="_")
+      outname <- paste(plotKML::normalizeFilename(deparse(substitute(x, env = parent.frame()))), j, sep="_")
     }
-    try(system(paste(program, shortPathName(normalizePath(filename(x))), set.file.extension(outname, ".tif"), '-te',  y[j,1], y[j,2], y[j,3], y[j,4]), show.output.on.console = show.output.on.console))
-    try(x.lst[[j]] <- raster(set.file.extension(outname, ".tif")))
+    try(system(paste(program, shortPathName(normalizePath(raster::filename(x))), RSAGA::set.file.extension(outname, ".tif"), '-te',  y[j,1], y[j,2], y[j,3], y[j,4]), show.output.on.console = show.output.on.console))
+    try(x.lst[[j]] <- raster::raster(RSAGA::set.file.extension(outname, ".tif")))
   }
   return(x.lst)
 
@@ -55,9 +65,9 @@ setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file
     y <- getSpatialTiles(x, block.x = block.x, ...)
   }
   ## subset by tiles:
-  ov <- over(x, y)
-  t.lst <- sapply(slot(y, "polygons"), slot, "ID")
-  bbox.lst <- lapply(slot(y, "polygons"), bbox)
+  ov <- sp::over(x, y)
+  t.lst <- sapply(methods::slot(y, "polygons"), methods::slot, "ID")
+  bbox.lst <- lapply(methods::slot(y, "polygons"), sp::bbox)
   message(paste('Subseting object of class \"', class(x), '\"...', sep=""))
   x.lst <- list()
   for(i in 1:length(y)){
@@ -77,10 +87,10 @@ setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file
   coords.lst <- lapply(as.list(as.data.frame(t(as.matrix(btiles)))), function(x){matrix(c(x[1], x[1], x[3], x[3], x[1], x[2], x[4], x[4], x[2], x[2]), ncol=2, dimnames=list(paste("p", 1:5, sep=""), attr(bb, "dimnames")[[1]]))})
 
   ## create an object of class "SpatialPolygons"
-  srl = lapply(coords.lst, Polygon)
+  srl = lapply(coords.lst, sp::Polygon)
   Srl = list()
-  for(i in 1:length(srl)){ Srl[[i]] <- Polygons(list(srl[[i]]), ID=row.names(btiles)[i]) }
-  pol = SpatialPolygons(Srl, proj4string=proj4string)
+  for(i in 1:length(srl)){ Srl[[i]] <- sp::Polygons(list(srl[[i]]), ID=row.names(btiles)[i]) }
+  pol = sp::SpatialPolygons(Srl, proj4string=proj4string)
 
   return(pol)
 }
@@ -100,9 +110,9 @@ setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file
   if(tmp.file==TRUE){
     tf <- tempfile()
   } else {
-    tf <- normalizeFilename(deparse(substitute(x, env = parent.frame())))
+    tf <- plotKML::normalizeFilename(deparse(substitute(x, env = parent.frame())))
   }
-  suppressMessages( writeOGR(x, set.file.extension(tf, ".shp"), layer=".", driver="ESRI Shapefile", overwrite_layer=TRUE) )
+  suppressMessages( rgdal::writeOGR(x, RSAGA::set.file.extension(tf, ".shp"), layer=".", driver="ESRI Shapefile", overwrite_layer=TRUE) )
 
   ## clip by tiles:
   x.lst <- list()
@@ -111,20 +121,46 @@ setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file
     if(tmp.file==TRUE){
       outname <- tempfile()
     } else {
-      outname <- paste(normalizeFilename(deparse(substitute(x, env = parent.frame()))), j, sep="_")
+      outname <- paste(plotKML::normalizeFilename(deparse(substitute(x, env = parent.frame()))), j, sep="_")
     }
     layername <- basename(sub("[.][^.]*$", "", outname, perl=TRUE))
 
     if(class(x)=="SpatialPolygonsDataFrame"){
-      try(system(paste(program, '-where \"OGR_GEOMETRY=\'Polygon\'\" -f \"ESRI Shapefile\"', set.file.extension(outname, ".shp"), set.file.extension(tf, ".shp"), '-clipsrc',  y[j,1], y[j,2], y[j,3], y[j,4], '-skipfailures'), show.output.on.console = show.output.on.console))
-      try(x.lst[[j]] <- readOGR(normalizePath(set.file.extension(outname, ".shp")), layername, verbose = FALSE))
+      try(system(paste(program, '-where \"OGR_GEOMETRY=\'Polygon\'\" -f \"ESRI Shapefile\"', RSAGA::set.file.extension(outname, ".shp"), RSAGA::set.file.extension(tf, ".shp"), '-clipsrc',  y[j,1], y[j,2], y[j,3], y[j,4], '-skipfailures'), show.output.on.console = show.output.on.console))
+      try(x.lst[[j]] <- rgdal::readOGR(normalizePath(RSAGA::set.file.extension(outname, ".shp")), layername, verbose = FALSE))
     }
     if(class(x)=="SpatialLinesDataFrame"){
-      try(system(paste(program, '-where \"OGR_GEOMETRY=\'Linestring\'\" -f \"ESRI Shapefile\"', set.file.extension(outname, ".shp"), set.file.extension(tf, ".shp"), '-clipsrc',  y[j,1], y[j,2], y[j,3], y[j,4], '-skipfailures'), show.output.on.console = show.output.on.console))
-      try(x.lst[[j]] <- readOGR(normalizePath(set.file.extension(outname, ".shp")), layername, verbose = FALSE))
+      try(system(paste(program, '-where \"OGR_GEOMETRY=\'Linestring\'\" -f \"ESRI Shapefile\"', RSAGA::set.file.extension(outname, ".shp"), RSAGA::set.file.extension(tf, ".shp"), '-clipsrc',  y[j,1], y[j,2], y[j,3], y[j,4], '-skipfailures'), show.output.on.console = show.output.on.console))
+      try(x.lst[[j]] <- rgdal::readOGR(normalizePath(RSAGA::set.file.extension(outname, ".shp")), layername, verbose = FALSE))
     }
   }
   return(x.lst)
+}
+
+.programPath <- function(path, utility){
+  if(missing(path)){
+    if(!file.exists("C:/PROGRA~1/GDAL/")&.Platform$OS.type == "windows"){
+      if(requireNamespace("gdalUtils", quietly = TRUE)){
+        path <- getOption("gdalUtils_gdalPath")[[1]]$path
+        if(is.null(path)){
+          ## force gdal installation:
+          gdalUtils::gdal_setInstallation()
+          message("Forcing installation of GDAL utilities... this might take time.")
+          path <- getOption("gdalUtils_gdalPath")[[1]]$path
+        }
+      }
+    }
+    if(file.exists(paste0("C:/PROGRA~1/GDAL/", utility, ".exe"))&.Platform$OS.type == "windows"){
+      program = shQuote(shortPathName(normalizePath(file.path("C:/PROGRA~1/GDAL/", paste0(utility, ".exe")))))
+    }
+  }
+
+  if(.Platform$OS.type == "windows") {
+    program = shQuote(shortPathName(normalizePath(file.path(path, paste(utility, ".exe", sep="")))))
+  } else {
+    program = utility
+  }
+  return(program)
 }
 
 setMethod("tile", signature(x = "SpatialPointsDataFrame"), .subsetTiles)

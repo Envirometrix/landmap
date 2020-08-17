@@ -1,12 +1,18 @@
 #' Fit a supervised fuzzy kmeans model and predict memberships
 #'
-#' @description Runs supervised fuzzy \emph{k}-means (\href{http://dx.doi.org/10.1080/13658810310001620924}{Hengl et al., 2004}) using a list of covariates layers provided as \code{"SpatialPixelsDataFrame-class"} object. If class centres and variances are not provided, it first fits a multinomial logistic regression model (\code{\link{spmultinom}}), then predicts the class centres and variances based on the output from the \code{nnet::multinom}.
+#' @aliases spfkm
+#' @rdname spfkm
+#'
+#' @description Runs supervised fuzzy \emph{k}-means (\href{http://dx.doi.org/10.1080/13658810310001620924}{Hengl et al., 2004}) using a list of covariates layers provided as \code{"SpatialPixelsDataFrame-class"} object. If class centres and variances are not provided, it first fits a multinomial logistic regression model (\code{spmultinom}), then predicts the class centres and variances based on the output from the \code{nnet::multinom}.
 #'
 #' @param formulaString formula.
 #' @param observations SpatialPointsDataFrame.
 #' @param covariates SpatialPixelsDataFrame.
+#' @param class.c class centers (per variable).
+#' @param class.sd class standard deviation (per variable).
+#' @param fuzzy.e fuzzy coefficient.
 #'
-#' @return
+#' @return A fuzzy kmeans model
 #' @export
 #'
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
@@ -43,7 +49,7 @@ setMethod("spfkm", signature(formulaString = "formula", observations = "SpatialP
 
   ## generate formula if missing:
   if(missing(formulaString)) {
-    formulaString <- as.formula(paste(names(observations)[1], "~", paste(names(covariates), collapse="+"), sep=""))
+    formulaString <- stats::as.formula(paste(names(observations)[1], "~", paste(names(covariates), collapse="+"), sep=""))
   }
   ## check the formula string:
   if(!plyr::is.formula(formulaString)){
@@ -114,7 +120,7 @@ setMethod("spfkm", signature(formulaString = "formula", observations = "SpatialP
   pm@data[,names(covariates)[1]] <- NULL
 
   ## overlay observations and covariates:
-  ov <- over(observations, pm)
+  ov <- sp::over(observations, pm)
   sel.c <- !is.na(ov[,tv]) & !is.na(observations@data[,tv])
 
   ## kappa statistics:
@@ -130,7 +136,7 @@ setMethod("spfkm", signature(formulaString = "formula", observations = "SpatialP
   }
 
   ## create the output object:
-  out <- new("SpatialMemberships", predicted = pm, model = mout, mu = mm, class.c = class.c, class.sd = class.sd, confusion = cf)
+  out <- methods::new("SpatialMemberships", predicted = pm, model = mout, mu = mm, class.c = class.c, class.sd = class.sd, confusion = cf)
   return(out)
 
 })

@@ -18,7 +18,7 @@ search.landgis(
 \item{update}{Logical specify to update the layer list}
 }
 \value{
-
+List of available landgis layers
 }
 \description{
 Search for available landgis layers

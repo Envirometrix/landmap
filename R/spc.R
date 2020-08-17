@@ -1,11 +1,15 @@
 #' Generate Principal Components using SpatialPixelsDataFrame object
 #'
+#' @aliases spc
+#'
 #' @description Combines the \code{stats::prcomp} method and predicts a list principal components for an object of type \code{"SpatialPixelsDataFrame"}.
 #'
 #' @param obj SpatialPixelsDataFrame.
+#' @param formulaString optional model definition.
+#' @param scale. scale all numbers.
+#' @param silent silent output.
 #'
 #' @return Object of class \code{SpatialComponents}. List of grids with generic names \code{PC1},\dots,\code{PCp}, where \code{p} is the total number of input grids.
-#' @export
 #'
 #' @note This method assumes that the input covariates are cross-correlated and hence their overlap can be reduced. The input variables are scaled by default and the missing values will be replaced with 0 values to reduce loss of data due to missing pixels.
 #'
@@ -26,9 +30,11 @@
 #'   sq = seq(rd[1], rd[2], length.out=48)
 #'   spplot(eberg_spc@predicted[1:4], at=sq, col.regions=pal)
 #' }
-setMethod("spc", signature(obj = "SpatialPixelsDataFrame"), function(obj, formulaString, scale. = TRUE, silent = FALSE, ...){
+#' @export
+#' @docType methods
+setMethod("spc", signature(obj = "SpatialPixelsDataFrame"), function(obj, formulaString, scale. = TRUE, silent = FALSE){
   if(missing(formulaString)){
-    formulaString <- as.formula(paste("~", paste(names(obj), collapse="+")))
+    formulaString <- stats::as.formula(paste("~", paste(names(obj), collapse="+")))
   }
   vars = all.vars(formulaString)
   if(length(vars)< 2){
@@ -63,31 +69,31 @@ setMethod("spc", signature(obj = "SpatialPixelsDataFrame"), function(obj, formul
     x <- scale(obj@data)
     x[is.na(x)] <- 0
     x <- as.data.frame(x)
-    sd.l <- lapply(x, FUN=sd)
+    sd.l <- lapply(x, FUN=stats::sd)
     x0 <- sd.l==0
     if(any(x0)){
       message(paste("Columns with zero variance removed:", names(x)[which(x0)]), immediate. = TRUE)
-      formulaString.f = as.formula(paste("~", paste(varsn[-which(x0)], collapse="+")))
+      formulaString.f = stats::as.formula(paste("~", paste(varsn[-which(x0)], collapse="+")))
       ## principal component analysis:
-      pcs <- prcomp(formulaString.f, x)
+      pcs <- stats::prcomp(formulaString.f, x)
     } else {
-      formulaString = as.formula(paste("~", paste(varsn, collapse="+")))
-      pcs <- prcomp(formulaString, x)
+      formulaString = stats::as.formula(paste("~", paste(varsn, collapse="+")))
+      pcs <- stats::prcomp(formulaString, x)
     }
   } else {
-    formulaString = as.formula(paste("~", paste(varsn, collapse="+")))
-    pcs <- prcomp(formulaString, obj@data)
+    formulaString = stats::as.formula(paste("~", paste(varsn, collapse="+")))
+    pcs <- stats::prcomp(formulaString, obj@data)
   }
 
   ## copy values:
   obj@data <- as.data.frame(pcs$x)
-  proj4string(obj) <- obj@proj4string
+  sp::proj4string(obj) <- obj@proj4string
   if(silent==FALSE){
     message(paste("Converting covariates to principal components..."))
     summary(pcs)
   }
 
-  pcs <- new("SpatialComponents", predicted = obj, pca = pcs[-which(names(pcs)=="x")])
+  pcs <- methods::new("SpatialComponents", predicted = obj, pca = pcs[-which(names(pcs)=="x")])
   return(pcs)
 
 })

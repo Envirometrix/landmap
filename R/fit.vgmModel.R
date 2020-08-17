@@ -1,10 +1,22 @@
 #' Fit variogram using point data
 #'
-#' @param formulaString.vgm formula.
-#' @param rmatrix data.frame.
-#' @param predictionDomain SpatialPixelsDataFrame.
+#' @aliases fit.vgmModel
 #'
-#' @return
+#' @param formulaString.vgm formula.
+#' @param rmatrix data.frame with coordinates and values of covariates.
+#' @param predictionDomain SpatialPixelsDataFrame.
+#' @param cov.model covariance model type used by the geoR package.
+#' @param dimensions optional 2D or 3D dimensions.
+#' @param lambda transformation value used by the geoR package.
+#' @param psiR range parameter used by the geoR package.
+#' @param subsample number of subset of original samples.
+#' @param ini.var initial variance (sill) used by the geoR package.
+#' @param ini.range initial range parameter used by the geoR package.
+#' @param fix.psiA setting used by the geoR package.
+#' @param fix.psiR setting used by the geoR package.
+#' @param ... optional arguments to pass to the geoR package.
+#'
+#' @return Fitted variogram model
 #' @export
 #'
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
@@ -31,12 +43,12 @@ setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "da
   if(!is.numeric(rmatrix[,tv])){ stop("Numeric variable expected for 'fit.vgmModel'") }
   if(length(all.vars(formulaString.vgm))>1){
     if(length(all.vars(formulaString.vgm))==2){
-      tcovs <- as.formula(paste(" ~ ", all.vars(formulaString.vgm)[2]))
+      tcovs <- stats::as.formula(paste(" ~ ", all.vars(formulaString.vgm)[2]))
     } else {
-      tcovs <- as.formula(paste(" ~ ", paste(all.vars(formulaString.vgm)[-1], collapse = "+")))
+      tcovs <- stats::as.formula(paste(" ~ ", paste(all.vars(formulaString.vgm)[-1], collapse = "+")))
     }
   }
-  sel.r <- complete.cases(lapply(all.vars(formulaString.vgm), function(x){rmatrix[,x]}))
+  sel.r <-  stats::complete.cases(lapply(all.vars(formulaString.vgm), function(x){rmatrix[,x]}))
   if(!sum(sel.r)==nrow(rmatrix)){ rmatrix <- rmatrix[sel.r,] }
   ## spatial coordinates (column names):
   xyn <- attr(predictionDomain@bbox, "dimnames")[[1]]
@@ -48,14 +60,14 @@ setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "da
     xyn <- c(xyn, "altitude")
   }
   ## create spatial points:
-  coordinates(rmatrix) <- as.formula(paste("~", paste(xyn, collapse = "+"), sep=""))
-  proj4string(rmatrix) <- predictionDomain@proj4string
+  sp::coordinates(rmatrix) <- stats::as.formula(paste("~", paste(xyn, collapse = "+"), sep=""))
+  sp::proj4string(rmatrix) <- predictionDomain@proj4string
   points <- rmatrix
   ## subset to speed up the computing:
   if(subsample < nrow(rmatrix)){
     pcnt <- subsample/nrow(rmatrix)
     message(paste0("Subsetting observations to ", signif(pcnt*100, 1), "%..."))
-    rmatrix <- rmatrix[runif(nrow(rmatrix))<pcnt,]
+    rmatrix <- rmatrix[stats::runif(nrow(rmatrix))<pcnt,]
   }
   if(length(all.vars(formulaString.vgm))>1){
     x.geo <- geoR::as.geodata(rmatrix[c(tv, all.vars(formulaString.vgm)[-1])], data.col=tv, covar.col=all.vars(formulaString.vgm)[-1])
@@ -102,15 +114,15 @@ setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "da
     }
     ## initial variogram:
     if(lambda==1){
-      ini.var <- var(log1p(x.geo$data), na.rm = TRUE)
+      ini.var <- stats::var(log1p(x.geo$data), na.rm = TRUE)
     } else {
-      ini.var <- var(x.geo$data, na.rm = TRUE)
+      ini.var <- stats::var(x.geo$data, na.rm = TRUE)
     }
     ## fit sample variogram:
     rvgm <- list(cov.model="nugget", lambda=lambda, practicalRange=ini.range)
     if(length(all.vars(formulaString.vgm))==1){
       message("Fitting a variogram using 'linkfit'...", immediate. = TRUE)
-      try( rvgm <- geoR::likfit(x.geo, lambda = lambda, messages = FALSE, ini = c(ini.var, ini.range), cov.model = cov.model) )
+      try( rvgm <- geoR::likfit(x.geo, lambda = lambda, messages = FALSE, ini = c(ini.stats::var, ini.range), cov.model = cov.model) )
     } else {
       message("Fitting a variogram using 'linkfit' and trend model...", immediate. = TRUE)
       try( rvgm <- geoR::likfit(x.geo, lambda = lambda, messages = FALSE, trend = tcovs, ini = c(ini.var, ini.range), fix.psiA = FALSE, fix.psiR = FALSE, cov.model = cov.model) )

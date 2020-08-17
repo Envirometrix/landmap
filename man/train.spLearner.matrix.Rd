@@ -10,7 +10,7 @@ train.spLearner.matrix(
   formulaString,
   covariates,
   SL.library,
-  family = gaussian(),
+  family = stats::gaussian(),
   method = "stack.cv",
   predict.type,
   super.learner,

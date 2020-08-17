@@ -4,15 +4,15 @@
 \alias{print.spLearner}
 \title{Print object of type 'spLearner'}
 \usage{
-\method{print}{spLearner}(object)
+\method{print}{spLearner}(x, ...)
 }
 \arguments{
-\item{object}{of type \code{spLearner}}
+\item{x}{of type \code{spLearner}}
 
 \item{...}{optional parameters}
 }
 \value{
-
+Model summary
 }
 \description{
 Print object of type 'spLearner'

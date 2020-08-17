@@ -6,6 +6,7 @@
 #' @param subset Subset string for WCS request.
 #' @param service URL of the WCS service.
 #' @param silent Silent output.
+#' @param ... optional \code{utils::download.file} settings.
 #'
 #' @return Locally downloaded GeoTIFF.
 #' @export
@@ -20,7 +21,8 @@
 #' search.landgis(pattern=c("clay", "10..10cm"))
 #' \dontrun{
 #' coverageId = "predicted250m:sol_clay.wfraction_usda.3a1a1a_m_250m_b10..10cm_1950..2017_v0.2"
-#' swiss1km.ll <- raster::projectRaster(raster(sic1997$swiss1km[2]), crs = "+init=epsg:4326", res=c(1/120, 1/120))
+#' swiss1km.ll <- raster::projectRaster(raster(sic1997$swiss1km[2]),
+#'                    crs = "+init=epsg:4326", res=c(1/120, 1/120))
 #' s1 = paste0("Lat(", swiss1km.ll@extent@ymin, ",", swiss1km.ll@extent@ymax,")")
 #' s2 = paste0("Long(", swiss1km.ll@extent@xmin, ",", swiss1km.ll@extent@xmax,")")
 #' sf = (1/480)/(1/120)
@@ -31,11 +33,13 @@
 #' plot(swiss1km.ll1km["clay_10..10cm"])
 #' ## mapview(swiss1km.ll1km["clay_10..10cm"])
 #' }
-download.landgis <- function(coverageId, filename, scalefactor=NULL, subset=NULL, service="https://geoserver.opengeohub.org/landgisgeoserver/ows?service=WCS&version=2.0.1", silent=TRUE, ...){
+download.landgis <- function(coverageId, filename, scalefactor=NULL, subset=NULL,
+            service=paste0(c("https://geoserver.opengeohub.org/landgisgeoserver/ows", "?service=WCS&version=2.0.1")),
+            silent=TRUE, ...){
   if(!is.null(scalefactor)){ scalefactor <- paste0('&scalefactor=', scalefactor) }
   if(!is.null(subset)){ subset <- paste0('&subset=', subset[1], '&subset=', subset[2]) }
   wcs.url <- paste0(service, '&request=GetCoverage&coverageId=', coverageId, subset, scalefactor)
-  x <- download.file(wcs.url, filename, quiet = silent, ...)
+  x <- utils::download.file(wcs.url, filename, quiet = silent, ...)
   try( obj <- rgdal::GDALinfo(filename, silent = silent) )
   if(!class(obj)=="GDALobj"){
     ## download from zenodo?
@@ -54,17 +58,17 @@ download.landgis <- function(coverageId, filename, scalefactor=NULL, subset=NULL
 #' @param layersURL Default URL with the list of layers
 #' @param update Logical specify to update the layer list
 #'
-#' @return
+#' @return List of available landgis layers
 #' @export
 search.landgis <- function(pattern, layersURL="https://landgisapi.opengeohub.org/query/layers", update=FALSE){
   #pattern=c("clay", "10..10cm")
-  data("landgis.tables")
+  #data("landgis.tables")
   if(update==TRUE){
     x1 <- tempfile(fileext = ".csv")
-    t1 <- download.file("https://raw.githubusercontent.com/Envirometrix/LandGISmaps/master/tables/LandGIS_tables_landgis_layers.csv", x1)
-    t1 <- read.csv(x1)
+    t1 <- utils::download.file("https://raw.githubusercontent.com/Envirometrix/LandGISmaps/master/tables/LandGIS_tables_landgis_layers.csv", x1)
+    t1 <- utils::read.csv(x1)
     t0.n <- c("dtm_landform_usgs.ecotapestry_c_250m_s0..0cm_2014_v1.0.tif.csv", "dtm_lithology_usgs.ecotapestry_c_250m_s0..0cm_2014_v1.0.tif.csv", "lcv_land.cover_esacci.lc.l4_c.csv", "pnv_biome.type_biome00k_c_1km_s0..0cm_2000..2017_v0.1.tif.csv", "sol_grtgroup_usda.soiltax_c_250m_s0..0cm_1950..2017_v0.1.tif.csv", "sol_texture.class_usda.tt_m_250m_b_1950..2017_v0.1.tif.csv")
-    t0 <- lapply(t0.n, function(i){ x <- tempfile(fileext = ".csv"); download.file(paste0("https://raw.githubusercontent.com/Envirometrix/LandGISmaps/master/tables/", i), x); read.csv(x) })
+    t0 <- lapply(t0.n, function(i){ x <- tempfile(fileext = ".csv"); utils::download.file(paste0("https://raw.githubusercontent.com/Envirometrix/LandGISmaps/master/tables/", i), x); utils::read.csv(x) })
     names(t0) = t0.n
     layers <- rjson::fromJSON(RCurl::getURL(layersURL))
     dep.id = unique(t1$layer_zenodo_deposit)
@@ -75,10 +79,14 @@ search.landgis <- function(pattern, layersURL="https://landgisapi.opengeohub.org
       z0[[i]] <- rjson::fromJSON(system(paste0('curl -H \"Accept: application/json\" -H \"Authorization: Bearer ', TOKEN, '\" \"https://www.zenodo.org/api/deposit/depositions/', dep.id[i], '\"'), intern=TRUE))
     }
     landgis.tables <- list(tables=t1, layers=layers, classes=t0, zenodo.files=z0)
+    landgis.tables$tables$layer_title = iconv(landgis.tables$tables$layer_title, to = "ASCII", sub="-")
+    landgis.tables$tables$layer_title_description = iconv(landgis.tables$tables$layer_title_description, to = "ASCII", sub="-")
+    landgis.tables$tables$layer_contact = iconv(landgis.tables$tables$layer_contact, to = "ASCII", sub="")
+    landgis.tables$tables$layer_citation_title = iconv(landgis.tables$tables$layer_citation_title, to = "ASCII", sub="")
     #save(landgis.tables, file = "data/landgis.tables.rda", compress = "xz")
   }
   layers.files <- unlist(landgis.tables$layers)
-  layers.files <- layers.files[grep(pattern=glob2rx("*.tif$"), layers.files)]
+  layers.files <- layers.files[grep(pattern=utils::glob2rx("*.tif$"), layers.files)]
   out1 <- layers.files[grepl(pattern[1], paste(layers.files))]
   if(length(pattern)==2){ out1 <- out1[grepl(pattern[2], paste(out1))]  }
   zenodo.files <- unlist(lapply(landgis.tables$zenodo.files, function(x){ sapply(x$files, function(i){ i$links$download }) }))

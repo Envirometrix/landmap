@@ -2,22 +2,33 @@
 % Please edit documentation in R/getSpatialTiles.R
 \name{getSpatialTiles,Spatial-method}
 \alias{getSpatialTiles,Spatial-method}
+\alias{getSpatialTiles}
 \title{Split a Spatial object into tiles}
 \usage{
-\S4method{tile}{SpatialPointsDataFrame}(x, y, block.x, \dots)
-\S4method{tile}{SpatialPixelsDataFrame}(x, y, block.x, \dots)
-\S4method{tile}{SpatialPolygonsDataFrame}(x, y, block.x, tmp.file = TRUE,
-                                          program, show.output.on.console = FALSE, \dots)
-\S4method{tile}{SpatialLinesDataFrame}(x, y, block.x, tmp.file = TRUE,
-                                       program, show.output.on.console = FALSE, \dots)
-\S4method{tile}{RasterLayer}(x, y, block.x, tmp.file = TRUE,
-                             program, show.output.on.console = FALSE, \dots)
+\S4method{getSpatialTiles}{Spatial}(
+  obj,
+  block.x,
+  block.y = block.x,
+  overlap.percent = 0,
+  limit.bbox = TRUE,
+  return.SpatialPolygons = TRUE
+)
 }
 \arguments{
-\item{obj}{Spatial.}
+\item{obj}{output of the GDALinfo.}
+
+\item{block.x}{size of the block in x dimension.}
+
+\item{block.y}{size of the block in y dimension.}
+
+\item{overlap.percent}{optional overlap percent between tiles.}
+
+\item{limit.bbox}{optional bounding box.}
+
+\item{return.SpatialPolygons}{logical specificies whether to return a data frame or Spatial Polygons.}
 }
 \value{
-
+List of object result of clipping
 }
 \description{
 Split a Spatial object into tiles

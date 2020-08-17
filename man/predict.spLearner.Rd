@@ -4,28 +4,33 @@
 \alias{predict.spLearner}
 \title{Predict spLearner}
 \usage{
-predict.spLearner(
+\method{predict}{spLearner}(
   object,
   predictionLocations,
   model.error = TRUE,
   error.type = c("weighted.sd", "interval")[1],
   w,
+  t.prob = 1/3,
   ...
 )
 }
 \arguments{
-\item{object}{of type \code{spLearner}}
+\item{object}{of type \code{spLearner}.}
 
-\item{predictionLocations}{\code{SpatialPixelsDataFrame} with all variables}
+\item{predictionLocations}{\code{SpatialPixelsDataFrame} with all variables.}
 
-\item{model.error}{Logical speficy if prediction errors should be derived}
+\item{model.error}{Logical speficy if prediction errors should be derived.}
 
-\item{error.type}{Specify how should be the prediction error be derived}
+\item{error.type}{Specify how should be the prediction error be derived.}
 
-\item{...}{optional parameters}
+\item{w}{optional weights vector.}
+
+\item{t.prob}{Threshold probability for signifant learners; only applyies for meta-learners based on lm model.}
+
+\item{...}{optional parameters.}
 }
 \value{
-SpatialPixelsDataFrame object with predictions and model error.
+Object of class \code{SpatialPixelsDataFrame} with predictions and model error.
 }
 \description{
 Predict spLearner

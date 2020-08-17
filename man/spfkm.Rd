@@ -2,6 +2,7 @@
 % Please edit documentation in R/spfkm.R
 \name{spfkm,formula,SpatialPointsDataFrame,SpatialPixelsDataFrame-method}
 \alias{spfkm,formula,SpatialPointsDataFrame,SpatialPixelsDataFrame-method}
+\alias{spfkm}
 \title{Fit a supervised fuzzy kmeans model and predict memberships}
 \usage{
 \S4method{spfkm}{formula,SpatialPointsDataFrame,SpatialPixelsDataFrame}(
@@ -19,12 +20,18 @@
 \item{observations}{SpatialPointsDataFrame.}
 
 \item{covariates}{SpatialPixelsDataFrame.}
+
+\item{class.c}{class centers (per variable).}
+
+\item{class.sd}{class standard deviation (per variable).}
+
+\item{fuzzy.e}{fuzzy coefficient.}
 }
 \value{
-
+A fuzzy kmeans model
 }
 \description{
-Runs supervised fuzzy \emph{k}-means (\href{http://dx.doi.org/10.1080/13658810310001620924}{Hengl et al., 2004}) using a list of covariates layers provided as \code{"SpatialPixelsDataFrame-class"} object. If class centres and variances are not provided, it first fits a multinomial logistic regression model (\code{\link{spmultinom}}), then predicts the class centres and variances based on the output from the \code{nnet::multinom}.
+Runs supervised fuzzy \emph{k}-means (\href{http://dx.doi.org/10.1080/13658810310001620924}{Hengl et al., 2004}) using a list of covariates layers provided as \code{"SpatialPixelsDataFrame-class"} object. If class centres and variances are not provided, it first fits a multinomial logistic regression model (\code{spmultinom}), then predicts the class centres and variances based on the output from the \code{nnet::multinom}.
 }
 \examples{
 library(plotKML)

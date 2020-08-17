@@ -2,6 +2,7 @@
 % Please edit documentation in R/spsample.prob.R
 \name{spsample.prob,SpatialPoints,SpatialPixelsDataFrame-method}
 \alias{spsample.prob,SpatialPoints,SpatialPixelsDataFrame-method}
+\alias{spsample.prob}
 \title{Estimate occurrence probabilities of a sampling plan (points)}
 \usage{
 \S4method{spsample.prob}{SpatialPoints,SpatialPixelsDataFrame}(observations, covariates, quant.nndist = 0.95, n.sigma, ...)
@@ -10,6 +11,12 @@
 \item{observations}{SpatialPoints.}
 
 \item{covariates}{SpatialPixelsDataFrame.}
+
+\item{quant.nndist}{quantile used for the threshold distance.}
+
+\item{n.sigma}{sigma parameter for density estimation.}
+
+\item{...}{optional arguments.}
 }
 \value{
 Returns a list of objects where \code{'iprob'} (\code{"SpatialPixelsDataFrame"}) is the map showing the estimated occurrence probabilities.

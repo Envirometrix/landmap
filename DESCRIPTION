@@ -4,7 +4,7 @@ Version: 0.0.3
 Authors@R: person("Tomislav", "Hengl", email = "tom.hengl@opengeohub.org", role = c("aut", "cre"))
 Description: Functions and tools for spatial interpolation and/or prediction of environmental variables (points to grids) 
    based on using Ensemble Machine Learning with geographical distances. Package also provides access to Global 
-   Environmental Layers produced by the OpenGeoHub.org foundation and collaborators. Some functions have been migrated and adopted from the GSIF
+   Environmental Layers (www.OpenLandMap.org) produced by the OpenGeoHub.org foundation and collaborators. Some functions have been migrated and adopted from the GSIF
    (Global Soil Information Facilities) package.
 Depends: R (>= 3.5.0)
 License: GPL-2 | MIT + file LICENSE
@@ -13,6 +13,8 @@ LazyData: true
 URL: https://github.com/envirometrix/landmap/
 BugReports: https://github.com/envirometrix/landmap/issues/
 Imports: 
+    methods,
+    utils,
     parallel,
     fossil,
     geoR,
@@ -30,9 +32,10 @@ Imports:
     xgboost, 
     kernlab,
     rgdal,
+    gdalUtils,
     raster,
     psych
-Suggests: rjson, RCurl, soiltexture, caret, snowfall, plotKML
+Suggests: rjson, RCurl, aqp, deepnet, RSAGA, soiltexture, caret, snowfall, plotKML, boot
 RoxygenNote: 7.1.0
 SystemRequirements: C++11, GDAL (>= 2.0.1), GEOS (>= 3.4.0),
     PROJ (>= 4.8.0)

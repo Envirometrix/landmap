@@ -9,8 +9,8 @@ download.landgis(
   filename,
   scalefactor = NULL,
   subset = NULL,
- 
-    service = "https://geoserver.opengeohub.org/landgisgeoserver/ows?service=WCS&version=2.0.1",
+  service = paste0(c("https://geoserver.opengeohub.org/landgisgeoserver/ows",
+    "?service=WCS&version=2.0.1")),
   silent = TRUE,
   ...
 )
@@ -27,6 +27,8 @@ download.landgis(
 \item{service}{URL of the WCS service.}
 
 \item{silent}{Silent output.}
+
+\item{...}{optional \code{utils::download.file} settings.}
 }
 \value{
 Locally downloaded GeoTIFF.
@@ -42,7 +44,8 @@ search.landgis(pattern=c("clay", "10..10cm"))
 search.landgis(pattern=c("clay", "10..10cm"))
 \dontrun{
 coverageId = "predicted250m:sol_clay.wfraction_usda.3a1a1a_m_250m_b10..10cm_1950..2017_v0.2"
-swiss1km.ll <- raster::projectRaster(raster(sic1997$swiss1km[2]), crs = "+init=epsg:4326", res=c(1/120, 1/120))
+swiss1km.ll <- raster::projectRaster(raster(sic1997$swiss1km[2]),
+                   crs = "+init=epsg:4326", res=c(1/120, 1/120))
 s1 = paste0("Lat(", swiss1km.ll@extent@ymin, ",", swiss1km.ll@extent@ymax,")")
 s2 = paste0("Long(", swiss1km.ll@extent@xmin, ",", swiss1km.ll@extent@xmax,")")
 sf = (1/480)/(1/120)

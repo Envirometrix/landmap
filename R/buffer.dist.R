@@ -1,11 +1,17 @@
 #' Derive buffer distances for a list of points
 #'
+#' @aliases buffer.dist
+#'
 #' @description Derive buffer distances using the \code{raster::distance} function, so that these can be used as predictors for spatial prediction i.e. to account for spatial proximity to low, medium and high values.
 #'
 #' @param observations SpatialPointsDataFrame.
 #' @param predictionDomain SpatialPixelsDataFrame.
+#' @param classes vector of selected points as factors.
+#' @param width maximum width for buffer distance.
+#' @param parallel optional parallelization setting.
+#' @param ... optional arguments to pass to \code{raster::distance} function.
 #'
-#' @return object of class SpatialPixelsDataFrame
+#' @return object of class \code{SpatialPixelsDataFrame} with distances to points
 #' @export
 #'
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
@@ -20,7 +26,7 @@
 setMethod("buffer.dist", signature(observations = "SpatialPointsDataFrame", predictionDomain = "SpatialPixelsDataFrame"), function(observations, predictionDomain, classes, width, parallel=TRUE, ...){
 
   ## check classes
-  if(missing(width)){ width <- sqrt(areaSpatialGrid(predictionDomain)) }
+  if(missing(width)){ width <- sqrt(sp::areaSpatialGrid(predictionDomain)) }
   if(!length(classes)==length(observations)){ stop("Length of 'observations' and 'classes' does not match.") }
   ## remove classes without any points:
   xg <- summary(classes, maxsum=length(levels(classes)))
@@ -31,7 +37,7 @@ setMethod("buffer.dist", signature(observations = "SpatialPointsDataFrame", pred
     classes <- droplevels(fclasses)
   }
   ## subset to points within the area
-  r.sel <- complete.cases(sp::over(observations, predictionDomain))
+  r.sel <- stats::complete.cases(sp::over(observations, predictionDomain))
   if(sum(r.sel)<nrow(observations)){
     observations <- observations[r.sel,]
     classes <- classes[r.sel]
@@ -50,7 +56,7 @@ setMethod("buffer.dist", signature(observations = "SpatialPointsDataFrame", pred
   ## remove empty slots
   s <- s[sapply(s, function(x){!is.null(x)})]
   s <- raster::brick(s)
-  s <- as(s, "SpatialPixelsDataFrame")
+  s <- methods::as(s, "SpatialPixelsDataFrame")
   s <- s[predictionDomain@grid.index,]
   return(s)
 

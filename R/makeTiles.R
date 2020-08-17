@@ -8,7 +8,7 @@
 #' @param columns Optional number of columns
 #' @param rows Optional number of rows
 #'
-#' @return
+#' @return A regular tiling system
 #' @export
 #'
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}

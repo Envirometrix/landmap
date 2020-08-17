@@ -1,16 +1,22 @@
 #' Fits a multinomial logistic regression to spatial data
 #'
+#' @aliases spmultinom
+#' @rdname spmultinom
+#'
 #' @param formulaString formula.
 #' @param observations SpatialPointsDataFrame.
 #' @param covariates SpatialPixelsDataFrame.
+#' @param class.stats class statistics.
+#' @param predict.probs specify whether to derive probabilities.
+#' @param ... optional arguments.
 #'
-#' @return
+#' @return A multinomial logistic regression model
 #' @export
 setMethod("spmultinom", signature(formulaString = "formula", observations = "SpatialPointsDataFrame", covariates = "SpatialPixelsDataFrame"), function(formulaString, observations, covariates, class.stats = TRUE, predict.probs = TRUE, ...){
 
   ## generate formula if missing:
   if(missing(formulaString)) {
-    formulaString <- as.formula(paste(names(observations)[1], "~", paste(names(covariates), collapse="+"), sep=""))
+    formulaString <- stats::as.formula(paste(names(observations)[1], "~", paste(names(covariates), collapse="+"), sep=""))
   }
   ## check the formula string:
   if(!plyr::is.formula(formulaString)){
@@ -25,16 +31,16 @@ setMethod("spmultinom", signature(formulaString = "formula", observations = "Spa
   }
 
   ## over observations and covariates:
-  ov <- over(observations, covariates[sel])
+  ov <- sp::over(observations, covariates[sel])
   ov <- cbind(data.frame(observations[tv]), ov)
 
   message("Fitting a multinomial logistic regression model...")
   mout <- nnet::multinom(formulaString, ov, ...)
-  cout <- as.factor(paste(predict(mout, newdata=covariates, na.action = na.pass)))
+  cout <- as.factor(paste(predict(mout, newdata=covariates, na.action = stats::na.pass)))
 
   ## predict probabilities if required:
   if(predict.probs == TRUE){
-     probs <- predict(mout, newdata=covariates, type="probs", na.action = na.pass)
+     probs <- predict(mout, newdata=covariates, type="probs", na.action = stats::na.pass)
      mm <- covariates[1]
      mm@data <- data.frame(probs)
      pm <- covariates[1]
@@ -43,7 +49,7 @@ setMethod("spmultinom", signature(formulaString = "formula", observations = "Spa
 
      ## kappa statistics:
      if(requireNamespace("mda", quietly = TRUE)&requireNamespace("psych", quietly = TRUE)){
-       cout.m <- as.factor(paste(predict(mout, newdata=ov, na.action = na.pass)))
+       cout.m <- as.factor(paste(predict(mout, newdata=ov, na.action = stats::na.pass)))
        cf <- mda::confusion(cout.m, as.character(ov[,tv]))
        ## remove missing classes:
        a = attr(cf, "dimnames")[[1]] %in% attr(cf, "dimnames")[[2]]
@@ -62,9 +68,9 @@ setMethod("spmultinom", signature(formulaString = "formula", observations = "Spa
 
   # estimate class centres using the results of multinom:
   if(class.stats == TRUE){
-    ca <- aggregate(covariates@data[,sel], by=list(cout), FUN="mean")
+    ca <- stats::aggregate(covariates@data[,sel], by=list(cout), FUN="mean")
     class.c <- as.matrix(ca[-1]); attr(class.c, "dimnames")[[1]] <- ca[,1]
-    ca <- aggregate(covariates@data[,sel], by=list(cout), FUN="sd")
+    ca <- stats::aggregate(covariates@data[,sel], by=list(cout), FUN="sd")
     class.sd <- as.matrix(ca[-1]); attr(class.sd, "dimnames")[[1]] <- ca[,1]
     # mask out classes that result in NA:
     for(c in row.names(class.c)){
@@ -79,7 +85,7 @@ setMethod("spmultinom", signature(formulaString = "formula", observations = "Spa
   # create the output object:
   if(predict.probs == TRUE){
     if(all(!is.na(rowSums(mm@data, na.rm=TRUE)))){
-      out <- new("SpatialMemberships", predicted = pm, model = mout, mu = mm, class.c = class.c, class.sd = class.sd, confusion = cf)
+      out <- methods::new("SpatialMemberships", predicted = pm, model = mout, mu = mm, class.c = class.c, class.sd = class.sd, confusion = cf)
     } else {
       stop("Predicted probabilities contain missing values. Consider removing some classes or setting 'predict.probs == FALSE'")
     }

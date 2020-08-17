@@ -30,7 +30,7 @@ makeTiles(
 \item{rows}{Optional number of rows}
 }
 \value{
-
+A regular tiling system
 }
 \description{
 Make a tiling system from a bounding box

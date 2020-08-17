@@ -26,6 +26,11 @@ is explained in detail in:
 - Hengl, T., Nussbaum, M., Wright, M. N., Heuvelink, G. B., and Gräler, B. (2018). 
    [Random Forest as a generic framework for predictive modeling of spatial and spatio-temporal variables](https://doi.org/10.7717/peerj.5518). PeerJ 6:e5518.
 
+Use of geographical distances as features in machine learning is exaplained in detail in:
+
+- Møller, A. B., Beucher, A. M., Pouladi, N., & Greve, M. H. (2019). [Oblique geographic coordinates as covariates for digital soil mapping](https://doi.org/10.5194/soil-2019-83). SOIL Discussions, 1-20.
+- Sekulić, A., Kilibarda, M., Heuvelink, G.B., Nikolić, M., Bajat, B. (2020). [Random Forest Spatial Interpolation](https://doi.org/10.3390/rs12101687). Remote Sens. 12, 1687.
+
 ## Installing
 
 Install development versions from github:
@@ -84,7 +89,7 @@ Spatial Prediction models are based only on fitting the [Ensemble Machine Learni
 (by default landmap uses `c("regr.ranger", "regr.ksvm", "regr.glmnet", "regr.cubist")`; see [a complete list of learners available via mlr](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html)) 
 with oblique coordinates (rotated coordinates) as described in [Moller et al. (2019) 
 "Oblique Coordinates as Covariates for Digital Soil Mapping"](https://www.soil-discuss.net/soil-2019-83/) to account for spatial autocorrelation in 
-values. Geographical distances to ALL points can be added 
+values. In the landmap packagte, geographical distances to ALL points can be added 
 by specifying `buffer.dist=TRUE`; this is however not recommended for large point data sets.
 The meta-learning i.e. the SuperLearner model shows which individual learners are most important:
 
@@ -114,8 +119,8 @@ Multiple R-squared:  0.5894,	Adjusted R-squared:  0.5784
 F-statistic: 53.82 on 4 and 150 DF,  p-value: < 2.2e-16
 ```
 
-in this case `regr.ranger` seems to be most important for predicting lead concentration, 
-while `regr.glmnet` is the least important. Overall this ensemble model explains ca 58% of variance (based on repeated cross-validation):
+in this case `regr.ranger` seems to be most important for predicting lead concentration (highest absolute t value), 
+while `regr.glmnet` is the least important. Overall this ensemble model explains ca 58% of variance (based on repeated cross-validation).
 
 Next we can generate predictions using:
 
@@ -124,7 +129,7 @@ meuse.lead <- predict(m)
 ```
 
 Note that, based on the current set-up with `method = "stack.cv"`, every time you re-run the model training you 
-might get somewhat different models / different betas. On the other hand, the final ensemble predictions (map) should visually not differ too much.
+might get somewhat different models / different betas. On the other hand, the final ensemble predictions (map) should visually not differ too much (see below).
 
 <img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png" width="650">\
 _Figure: Predicted lead content for the Meuse data set. Model error is derived as weighted standard deviation from multiple model predictions._

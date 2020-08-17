@@ -15,9 +15,19 @@
 }
 \arguments{
 \item{obj}{ANY.}
+
+\item{block.x}{size of the block in x dimension.}
+
+\item{block.y}{size of the block in y dimension.}
+
+\item{overlap.percent}{optional overlap percent between tiles.}
+
+\item{limit.bbox}{optional bounding box.}
+
+\item{return.SpatialPolygons}{logical specificies whether to return a data frame or Spatial Polygons.}
 }
 \value{
-
+Tiling system for a spatial object
 }
 \description{
 Estimate a tiling system

@@ -9,17 +9,17 @@ sample.grid.SpatialPointsDataFrame <- function(obj, cell.size, n, bbox, ...){
     if(missing(bbox)) { bbox <- obj@bbox }
     if(missing(cell.size)){
         ## automatically determine width:
-        cell.size <- bbox[1,]/400 
+        cell.size <- bbox[1,]/400
         message("Assigning 'cell.size'", immediate. = TRUE)
     }
-    x <- GridTopology(cellcentre.offset=bbox[,1],
+    x <- sp::GridTopology(cellcentre.offset=bbox[,1],
             cellsize=cell.size,
             cells.dim=c(floor(abs(diff(bbox[1,])/cell.size[1])),
             ncols=floor(abs(diff(bbox[2,])/cell.size[2]))))
-    r.sp <- SpatialGrid(x, proj4string = obj@proj4string)
-    r <- raster(r.sp)
-    grd <- as(rasterize(obj, r, field = "gid"), "SpatialGridDataFrame")
-    ov <- over(obj, grd, ...)
+    r.sp <- sp::SpatialGrid(x, proj4string = obj@proj4string)
+    r <- raster::raster(r.sp)
+    grd <- methods::as(raster::rasterize(obj, r, field = "gid"), "SpatialGridDataFrame")
+    ov <- sp::over(obj, grd, ...)
     pnts <- tapply(obj$gid, ov, function(x, n){
         if(length(x) <= n){ x
         } else { sample(x,n) }
@@ -36,9 +36,9 @@ sample.grid.SpatialPointsDataFrame <- function(obj, cell.size, n, bbox, ...){
 }
 
 sample.grid.SpatialPoints <- function(obj, cell.size, n, bbox, ...){
-    obj <- SpatialPointsDataFrame(obj, data.frame(id = 1:length(obj)))
+    obj <- sp::SpatialPointsDataFrame(obj, data.frame(id = 1:length(obj)))
     ret <- sample.grid.SpatialPointsDataFrame(obj, cell.size, n, bbox, ...)
-    ret <- as(ret, "SpatialPoints")
+    ret <- methods::as(ret, "SpatialPoints")
     return(ret)
 }
 

@@ -2,6 +2,7 @@
 % Please edit documentation in R/fit.vgmModel.R
 \name{fit.vgmModel,formula,data.frame,SpatialPixelsDataFrame-method}
 \alias{fit.vgmModel,formula,data.frame,SpatialPixelsDataFrame-method}
+\alias{fit.vgmModel}
 \title{Fit variogram using point data}
 \usage{
 \S4method{fit.vgmModel}{formula,data.frame,SpatialPixelsDataFrame}(
@@ -23,12 +24,32 @@
 \arguments{
 \item{formulaString.vgm}{formula.}
 
-\item{rmatrix}{data.frame.}
+\item{rmatrix}{data.frame with coordinates and values of covariates.}
 
 \item{predictionDomain}{SpatialPixelsDataFrame.}
+
+\item{cov.model}{covariance model type used by the geoR package.}
+
+\item{dimensions}{optional 2D or 3D dimensions.}
+
+\item{lambda}{transformation value used by the geoR package.}
+
+\item{psiR}{range parameter used by the geoR package.}
+
+\item{subsample}{number of subset of original samples.}
+
+\item{ini.var}{initial variance (sill) used by the geoR package.}
+
+\item{ini.range}{initial range parameter used by the geoR package.}
+
+\item{fix.psiA}{setting used by the geoR package.}
+
+\item{fix.psiR}{setting used by the geoR package.}
+
+\item{...}{optional arguments to pass to the geoR package.}
 }
 \value{
-
+Fitted variogram model
 }
 \description{
 Fit variogram using point data

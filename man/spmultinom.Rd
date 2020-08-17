@@ -2,6 +2,7 @@
 % Please edit documentation in R/spmultinom.R
 \name{spmultinom,formula,SpatialPointsDataFrame,SpatialPixelsDataFrame-method}
 \alias{spmultinom,formula,SpatialPointsDataFrame,SpatialPixelsDataFrame-method}
+\alias{spmultinom}
 \title{Fits a multinomial logistic regression to spatial data}
 \usage{
 \S4method{spmultinom}{formula,SpatialPointsDataFrame,SpatialPixelsDataFrame}(
@@ -19,9 +20,15 @@
 \item{observations}{SpatialPointsDataFrame.}
 
 \item{covariates}{SpatialPixelsDataFrame.}
+
+\item{class.stats}{class statistics.}
+
+\item{predict.probs}{specify whether to derive probabilities.}
+
+\item{...}{optional arguments.}
 }
 \value{
-
+A multinomial logistic regression model
 }
 \description{
 Fits a multinomial logistic regression to spatial data

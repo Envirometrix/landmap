@@ -4,7 +4,7 @@
 \title{A class for membership maps derived using the \code{fkmeans} classification}
 \description{A class containing a list of gridded maps and results of model fitting.}
 \section{Slots}{
-  \describe{    
+  \describe{
     \item{\code{predicted}:}{object of class \code{"SpatialPixelsDataFrame"}; predicted values (factor)}
     \item{\code{model}:}{object of class \code{"multinom"}; output object from the \code{nnet::multinom} method}
     \item{\code{mu}:}{object of class \code{"SpatialPixelsDataFrame"}; a list of predicted memberships}
@@ -14,6 +14,6 @@
   }
 }
 \author{ Tomislav Hengl }
-\seealso{ \code{\link{spfkm}}, \code{\link{SpatialComponents-class}}
+\seealso{ \code{\link{SpatialComponents-class}}
 }
 \keyword{classes}

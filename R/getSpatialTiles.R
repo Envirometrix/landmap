@@ -1,18 +1,16 @@
 #' Split a Spatial object into tiles
 #'
-#' @param obj Spatial.
+#' @aliases getSpatialTiles
+#' @rdname getSpatialTiles-methods
 #'
-#' @usage
-#' \S4method{tile}{SpatialPointsDataFrame}(x, y, block.x, \dots)
-#' \S4method{tile}{SpatialPixelsDataFrame}(x, y, block.x, \dots)
-#' \S4method{tile}{SpatialPolygonsDataFrame}(x, y, block.x, tmp.file = TRUE,
-#'                                           program, show.output.on.console = FALSE, \dots)
-#' \S4method{tile}{SpatialLinesDataFrame}(x, y, block.x, tmp.file = TRUE,
-#'                                        program, show.output.on.console = FALSE, \dots)
-#' \S4method{tile}{RasterLayer}(x, y, block.x, tmp.file = TRUE,
-#'                              program, show.output.on.console = FALSE, \dots)
+#' @param obj output of the GDALinfo.
+#' @param block.x size of the block in x dimension.
+#' @param block.y size of the block in y dimension.
+#' @param overlap.percent optional overlap percent between tiles.
+#' @param limit.bbox optional bounding box.
+#' @param return.SpatialPolygons logical specificies whether to return a data frame or Spatial Polygons.
 #'
-#' @return
+#' @return List of object result of clipping
 #' @export
 #'
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
@@ -78,8 +76,13 @@ setMethod("getSpatialTiles", signature(obj = "Spatial"), function(obj, block.x, 
 #' Estimate a tiling system
 #'
 #' @param obj ANY.
+#' @param block.x size of the block in x dimension.
+#' @param block.y size of the block in y dimension.
+#' @param overlap.percent optional overlap percent between tiles.
+#' @param limit.bbox optional bounding box.
+#' @param return.SpatialPolygons logical specificies whether to return a data frame or Spatial Polygons.
 #'
-#' @return
+#' @return Tiling system for a spatial object
 #' @export
 setMethod("getSpatialTiles", signature(obj = "ANY"), function(obj, block.x, block.y = block.x, overlap.percent = 0, limit.bbox = TRUE, return.SpatialPolygons = FALSE){
 
@@ -98,7 +101,7 @@ setMethod("getSpatialTiles", signature(obj = "ANY"), function(obj, block.x, bloc
   btiles <- makeTiles(bb, block.x, block.y, overlap.percent, limit.bbox, rows = obj[["rows"]], columns = obj[["columns"]])
 
   if(return.SpatialPolygons == TRUE){
-    pol <- .tiles2pol(bb=bb, btiles=btiles, proj4string=CRS(attr(obj, "projection")))
+    pol <- .tiles2pol(bb=bb, btiles=btiles, proj4string=sp::CRS(attr(obj, "projection")))
   } else {
     pol = btiles
   }

@@ -2,6 +2,7 @@
 % Please edit documentation in R/buffer.dist.R
 \name{buffer.dist,SpatialPointsDataFrame,SpatialPixelsDataFrame-method}
 \alias{buffer.dist,SpatialPointsDataFrame,SpatialPixelsDataFrame-method}
+\alias{buffer.dist}
 \title{Derive buffer distances for a list of points}
 \usage{
 \S4method{buffer.dist}{SpatialPointsDataFrame,SpatialPixelsDataFrame}(
@@ -17,9 +18,17 @@
 \item{observations}{SpatialPointsDataFrame.}
 
 \item{predictionDomain}{SpatialPixelsDataFrame.}
+
+\item{classes}{vector of selected points as factors.}
+
+\item{width}{maximum width for buffer distance.}
+
+\item{parallel}{optional parallelization setting.}
+
+\item{...}{optional arguments to pass to \code{raster::distance} function.}
 }
 \value{
-object of class SpatialPixelsDataFrame
+object of class \code{SpatialPixelsDataFrame} with distances to points
 }
 \description{
 Derive buffer distances using the \code{raster::distance} function, so that these can be used as predictors for spatial prediction i.e. to account for spatial proximity to low, medium and high values.

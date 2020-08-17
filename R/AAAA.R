@@ -1,14 +1,4 @@
-#' Spatial Prediction Learner class
-#'
-#' @slot spModel ANY.
-#' @slot vgmModel list.
-#' @slot covariates SpatialPixelsDataFrame.
-#' @slot spID SpatialGridDataFrame.
-#'
-#' @importClassesFrom sp SpatialPixelsDataFrame SpatialGridDataFrame
-#'
-#' @return
-#' @export
+
 setClass("spLearner", slots = c(spModel = "ANY", vgmModel = "list", covariates = "SpatialPixelsDataFrame", spID = "SpatialGridDataFrame"), validity = function(object) {
     if(!class(object@vgmModel$observations)=="SpatialPointsDataFrame")
       return("Expecting an object of class 'SpatialPointsDataFrame'")
@@ -19,15 +9,6 @@ setClass("spLearner", slots = c(spModel = "ANY", vgmModel = "list", covariates =
     }
 })
 
-#' Spatial Principal Components class
-#'
-#' @slot predicted SpatialPixelsDataFrame.
-#' @slot pca list.
-#'
-#' @importClassesFrom sp SpatialPixelsDataFrame
-#'
-#' @return
-#' @export
 setClass("SpatialComponents", representation (predicted = "SpatialPixelsDataFrame", pca = "list"), validity = function(object) {
    cnames <- attr(object@pca$rotation, "dimnames")[[1]]
    pnames <- attr(object@pca$rotation, "dimnames")[[2]]
@@ -38,19 +19,6 @@ setClass("SpatialComponents", representation (predicted = "SpatialPixelsDataFram
       return("Column names in the 'predicted' slot and 'pca' slots do not match")
 })
 
-#' SpatialMemberships class
-#'
-#' @slot predicted SpatialPixelsDataFrame.
-#' @slot model list.
-#' @slot mu SpatialPixelsDataFrame.
-#' @slot class.c matrix.
-#' @slot class.sd matrix.
-#' @slot confusion ANY.
-#'
-#' @importClassesFrom sp SpatialPixelsDataFrame
-#'
-#' @return
-#' @export
 setClass("SpatialMemberships", representation (predicted = "SpatialPixelsDataFrame", model = "list", mu = "SpatialPixelsDataFrame", class.c = "matrix", class.sd = "matrix", confusion = "ANY"), validity = function(object) {
    ## check if column names match:
    if(!all(row.names(object@class.c) %in% levels(object@predicted@data[,1])))
@@ -69,7 +37,7 @@ if(!isGeneric("predict")){
 }
 
 if(!isGeneric("print")){
-  setGeneric("print", function(object, ...){standardGeneric("print")})
+  setGeneric("print", function(x, ...){standardGeneric("print")})
 }
 
 if(!isGeneric("over")){
