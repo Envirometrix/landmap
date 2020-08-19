@@ -89,6 +89,7 @@ When using \code{method = "stack.cv"} each training and prediction round could p
 }
 \examples{
 \dontrun{
+library(mlr)
 library(rgdal)
 library(geoR)
 library(plotKML)
@@ -96,7 +97,6 @@ library(raster)
 library(parallelMap)
 library(xgboost)
 library(kernlab)
-library(mlr)
 library(ranger)
 library(deepnet)
 library(glmnet)

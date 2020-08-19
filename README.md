@@ -49,6 +49,11 @@ Under construction. Use for testing purposes only.
 The following examples demostrates spatial prediction using the meuse data set:
 
 ```r
+ls <- c("rgdal", "raster", "plotKML", "geoR", "ranger", "mlr", 
+        "xgboost", "glmnet", "matrixStats", "kernlab", "deepnet")
+new.packages <- ls[!(ls %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+library(landmap)
 library(rgdal)
 library(geoR)
 library(plotKML)
@@ -57,7 +62,7 @@ library(glmnet)
 library(xgboost)
 library(kernlab)
 library(deepnet)
-library(Cubist)
+library(mlr)
 demo(meuse, echo=FALSE)
 m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 1)
 ```
@@ -70,23 +75,27 @@ Converting covariates to principal components...
 Deriving oblique coordinates...TRUE
 Fitting a variogram using 'linkfit' and trend model...TRUE
 Estimating block size ID for spatial Cross Validation...TRUE
-Starting parallelization in mode=socket with cpus=8.
-Using learners: regr.ranger, regr.ksvm, regr.glmnet, regr.cubist...TRUE
+Starting parallelization in mode=socket with cpus=32.
+Using learners: regr.ranger, regr.ksvm, regr.nnet, regr.cvglmnet...TRUE
 Fitting a spatial learner using 'mlr::makeRegrTask'...TRUE
 Exporting objects to slaves for mode socket: .mlr.slave.options
-Mapping in parallel: mode = socket; cpus = 8; elements = 5.
+Mapping in parallel: mode = socket; cpus = 32; elements = 5.
 Exporting objects to slaves for mode socket: .mlr.slave.options
-Mapping in parallel: mode = socket; cpus = 8; elements = 5.
+Mapping in parallel: mode = socket; cpus = 32; elements = 5.
 Exporting objects to slaves for mode socket: .mlr.slave.options
-Mapping in parallel: mode = socket; cpus = 8; elements = 5.
+Mapping in parallel: mode = socket; cpus = 32; elements = 5.
+# weights:  103
+initial  value 5568925.436252 
+final  value 1908391.767742 
+converged
 Exporting objects to slaves for mode socket: .mlr.slave.options
-Mapping in parallel: mode = socket; cpus = 8; elements = 5.
+Mapping in parallel: mode = socket; cpus = 32; elements = 5.
 Stopped parallelization. All cleaned up.
 ```
 
 The variogram model is only fitted to estimate effective range of spatial dependence.
 Spatial Prediction models are based only on fitting the [Ensemble Machine Learning](https://koalaverse.github.io/machine-learning-in-R/stacking.html#stacking-software-in-r) 
-(by default landmap uses `c("regr.ranger", "regr.ksvm", "regr.glmnet", "regr.cubist")`; see [a complete list of learners available via mlr](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html)) 
+(by default landmap uses `c("regr.ranger", "regr.ksvm", "regr.nnet", "regr.cvglmnet")`; see [a complete list of learners available via mlr](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html)) 
 with oblique coordinates (rotated coordinates) as described in [Moller et al. (2019) 
 "Oblique Coordinates as Covariates for Digital Soil Mapping"](https://www.soil-discuss.net/soil-2019-83/) to account for spatial autocorrelation in 
 values. In the landmap packagte, geographical distances to ALL points can be added 
@@ -96,31 +105,32 @@ The meta-learning i.e. the SuperLearner model shows which individual learners ar
 ```r
 summary(m@spModel$learner.model$super.model$learner.model)
 ```
+
 ```
 Call:
 stats::lm(formula = f, data = d)
 
 Residuals:
-     Min       1Q   Median       3Q      Max 
--173.960  -35.549   -6.493   16.507  308.414 
+    Min      1Q  Median      3Q     Max 
+-167.54  -33.91   -4.76   15.60  319.19 
 
 Coefficients:
-             Estimate Std. Error t value Pr(>|t|)    
-(Intercept) -15.65153   13.62986  -1.148    0.253    
-regr.ranger   0.91523    0.21575   4.242 3.86e-05 ***
-regr.ksvm     0.33415    0.24691   1.353    0.178    
-regr.glmnet   0.01482    0.15172   0.098    0.922    
-regr.cubist  -0.13882    0.13639  -1.018    0.310    
+               Estimate Std. Error t value Pr(>|t|)   
+(Intercept)   831.30070  296.21487   2.806  0.00568 **
+regr.ranger     0.61053    0.21394   2.854  0.00493 **
+regr.ksvm       0.57527    0.26730   2.152  0.03299 * 
+regr.nnet      -5.49366    1.95907  -2.804  0.00571 **
+regr.cvglmnet  -0.04499    0.24123  -0.186  0.85232   
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 72.28 on 150 degrees of freedom
-Multiple R-squared:  0.5894,	Adjusted R-squared:  0.5784 
-F-statistic: 53.82 on 4 and 150 DF,  p-value: < 2.2e-16
+Residual standard error: 73.79 on 150 degrees of freedom
+Multiple R-squared:  0.572,	Adjusted R-squared:  0.5606 
+F-statistic: 50.12 on 4 and 150 DF,  p-value: < 2.2e-16```
 ```
 
 in this case `regr.ranger` seems to be most important for predicting lead concentration (highest absolute t value), 
-while `regr.glmnet` is the least important. Overall this ensemble model explains ca 58% of variance (based on repeated cross-validation).
+while `regr.cvglmnet` is the least important. Overall, this ensemble model explains ca 57% of variance (based on repeated cross-validation).
 
 Next we can generate predictions using:
 

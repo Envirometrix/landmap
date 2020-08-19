@@ -174,6 +174,7 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #'
 #' @examples
 #' \dontrun{
+#' library(mlr)
 #' library(rgdal)
 #' library(geoR)
 #' library(plotKML)
@@ -181,7 +182,6 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' library(parallelMap)
 #' library(xgboost)
 #' library(kernlab)
-#' library(mlr)
 #' library(ranger)
 #' library(deepnet)
 #' library(glmnet)
