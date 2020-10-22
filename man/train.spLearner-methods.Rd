@@ -79,7 +79,7 @@ used for Cross-validation.
 Automated spatial predictions and/or interpolation using Ensemble Machine Learning. Extends functionality of the \href{https://github.com/mlr-org/mlr}{mlr} package. Suitable for predicting numeric, binomial and factor-type variables.
 }
 \note{
-By default uses oblique coordinates (rotated coordinates) as described in Moller et al. (2019) "Oblique Coordinates as Covariates for Digital Soil Mapping" to account for geographical distribution of values.
+By default uses oblique coordinates (rotated coordinates) as described in \href{https://doi.org/10.5194/soil-6-269-2020}{Moller et al. (2020)} to account for geographical distribution of values.
 Buffer geographical distances can be added by setting \code{buffer.dist=TRUE}.
 Using either oblique coordinates and/or buffer distances is not recommended for point data set with distinct spatial clustering.
 Effects of adding geographical distances into modeling are explained in detail in \href{https://doi.org/10.7717/peerj.5518}{Hengl et al. (2018)}.
@@ -88,22 +88,32 @@ Default learners used for classification / binomial variables are \code{c("class
 When using \code{method = "stack.cv"} each training and prediction round could produce somewhat different results due to randomisation of CV.
 }
 \examples{
-\dontrun{
 library(mlr)
 library(rgdal)
 library(geoR)
 library(plotKML)
-library(raster)
-library(parallelMap)
 library(xgboost)
 library(kernlab)
 library(ranger)
-library(deepnet)
 library(glmnet)
 library(boot)
 demo(meuse, echo=FALSE)
-
 ## Regression:
+sl = c("regr.ranger", "regr.ksvm", "regr.cvglmnet")
+m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")],
+      lambda = 0, parallel=FALSE, SL.library = sl)
+summary(m@spModel$learner.model$super.model$learner.model)
+## regression-matrix:
+str(m@vgmModel$observations@data)
+meuse.y <- predict(m)
+plot(raster(meuse.y$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
+   main="Predictions spLearner", axes=FALSE, box=FALSE)
+
+\dontrun{
+library(raster)
+library(parallelMap)
+library(deepnet)
+## Regression with default settings:
 m <- train.spLearner(meuse["zinc"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 0)
 ## Ensemble model (meta-learner):
 summary(m@spModel$learner.model$super.model$learner.model)

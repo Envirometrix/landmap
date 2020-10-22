@@ -7,7 +7,7 @@ Description: Functions and tools for spatial interpolation and/or prediction of 
    Environmental Layers (www.OpenLandMap.org) produced by the OpenGeoHub.org foundation and collaborators. Some functions have been migrated and adopted from the GSIF
    (Global Soil Information Facilities) package.
 Depends: R (>= 3.5.0)
-License: GPL-2 | MIT + file LICENSE
+License: file LICENSE
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/envirometrix/landmap/

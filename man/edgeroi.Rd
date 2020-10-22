@@ -12,7 +12,7 @@ The \code{edgeroi} data set contains two data frames --- sites and horizons. Sit
   \item{\code{SOURCEID}}{factor; unique label to help a user identify a particular site (\code{ID} in the \href{http://www.asris.csiro.au/mapping/hyperdocs/NatSoil/}{NatSoil})}
   \item{\code{LONGDA94}}{numeric; longitude in decimal degrees on the GDA94 datum}
   \item{\code{LATGDA94}}{numeric; latitude in decimal degrees on the GDA94 datum}
-  \item{\code{TAXGAUC}}{factor; \href{http://www.clw.csiro.au/aclep/}{Australian Great Soil Groups} (GSG; see details)}
+  \item{\code{TAXGAUC}}{factor; \href{https://www.clw.csiro.au/aclep/}{Australian Great Soil Groups} (GSG; see details)}
   \item{\code{NOTEOBS}}{character; free-form observation notes}
 }
 Horizons table contains the following columns:
@@ -34,8 +34,8 @@ The \code{edgeroi.grids} data frame contains a list of covariates at 250 m resol
   \item{\code{TWISRT5}}{numeric; SAGA Topographic Wetness Index based on the SRTM DEM}
   \item{\code{PMTGEO5}}{factor; parent material class based on the National Geological map at scale 1:250,000 --- sand with minor silty sand (\code{"Qd"}), alluvium gravel, sand, silt, clay (\code{"Qrs"}), quartz sandstone obscured by quartenary sands (\code{"Qrt/Jp"}), quartz sandstone obscured by talus material (\code{"Qrt/Rn"}), basalt obscured by talus material (\code{"Qrt/Tv"}), mottled clay, silt, sandstone and gravel (\code{"Ts"}), and basalt, dolerite, trachyte, techenite (\code{"Tv"})}
   \item{\code{EV1MOD5}}{numeric; first principal component of the MODIS EVI (MOD13Q1) time series data (year 2011)}
-  \item{\code{EV2MOD5}}{numeric; second principal component of the MODIS EVI (MOD13Q1) time series data (year 2011)}  
-  \item{\code{EV3MOD5}}{numeric; third principal component of the MODIS EVI (MOD13Q1) time series data (year 2011)}  
+  \item{\code{EV2MOD5}}{numeric; second principal component of the MODIS EVI (MOD13Q1) time series data (year 2011)}
+  \item{\code{EV3MOD5}}{numeric; third principal component of the MODIS EVI (MOD13Q1) time series data (year 2011)}
   \item{\code{x}}{numeric; x-coordinate in the GDA94 / MGA zone 55}
   \item{\code{y}}{numeric; y-coordinate in the GDA94 / MGA zone 55}
 }
@@ -53,7 +53,7 @@ The \code{edgeroi.grids100} data frame contains a list of covariates at 100 m re
 }
 }
 \details{The Edgeroi is one of the standard soil data sets used to test soil mapping methods in Australia. Out of 359 profiles, 210 sites were sampled on a systematic, equilateral triangular grid with a spacing of 2.8 km between sites, the other sites are distributed more irregularly or on transects. The data set is described in detail in \href{http://dx.doi.org/10.1016/j.geoderma.2009.10.007}{Malone et al. (2010)} and McGarry et al. (1989). The \code{edgeroi} contains only a subset of the original \href{http://www.asris.csiro.au/mapping/hyperdocs/NatSoil/}{NatSoil} records. Observed soil classes for \code{TAXGAUC} are (alphabetically): Alluvial soil (\code{"A"}), Brown clay (\code{"BC"}), Black earth (\code{"BE"}), Earthy sand (\code{"ES"}), Grey clay (\code{"GC"}), Grey earth (\code{"GE"}), No suitable group (\code{"NSG"}), Prairie soil (\code{"PS"}), Rendzina (\code{"R"}), Red-brown earth (\code{"RBE"}), Red clay (\code{"RC"}), Red earth (\code{"RE"}), Red podzolic soil (\code{"RP"}), Solodic soil (\code{"SC"}), Soloth (\code{"SH"}), Solonchak (\code{"SK"}), Siliceous sand (\code{"SS"}), and Solonetz (\code{"SZ"}).}
-\note{The Landsat images and SRTM DEM have been obtained from the \href{http://glcf.umd.edu/}{Global Land Cover Facility}. Scanned geology map (paper sheets) has been obtained from the \href{http://www.geoscience.gov.au}{Geoscience Australia}, then georeferenced and rasterized to 250 m resolution. The land use map has been obtained from the Australian Collaborative Land Use and Management program. The Radiometric Map of Australia grids has been downloaded using the Geophysical Archive Data Delivery System (GADDS) on the Australian Government's Geoscience Portal (\href{http://dx.doi.org/10.1071/EG09025}{Mitny et al, 2009}).\cr 
+\note{The Landsat images and SRTM DEM have been obtained from the \href{https://geog.umd.edu/}{Global Land Cover Facility}. Scanned geology map (paper sheets) has been obtained from the \href{http://www.geoscience.gov.au}{Geoscience Australia}, then georeferenced and rasterized to 250 m resolution. The land use map has been obtained from the Australian Collaborative Land Use and Management program. The Radiometric Map of Australia grids has been downloaded using the Geophysical Archive Data Delivery System (GADDS) on the Australian Government's Geoscience Portal (\href{http://dx.doi.org/10.1071/EG09025}{Mitny et al, 2009}).\cr
 Listed gridded layers follow a standard naming convention used by WorlGrids.org (the standard 8.3 filename convention with at most eight characters): first three letter are used for the variable type e.g. \code{DEM} (digital elevation model); the next three letters represent the data source or collection method e.g. \code{SRT} (SRTM mission); the 6th character is the effective scale e.g. \code{5} indicates the 5th standard scale i.e. 1/600 decimal degrees (in this case 250 m).}
 \author{The \href{http://www.asris.csiro.au/mapping/hyperdocs/NatSoil/}{original detailed profile description and laboratory analysis} was funded by a Cotton Research and Development Corporation project in the mid-late 1980's by the CSIRO Division of Soils and available via the \href{http://www.asris.csiro.au/mapping/hyperdocs/NatSoil/}{NatSoil} DB. The gamma radiometrics images are property of the NSW Department of Primary Industries --- Mineral Resources.}
 \references{
@@ -89,7 +89,7 @@ proj4string(edgeroi.grids) <- CRS("+init=epsg:28355")
 spplot(edgeroi.grids[1], sp.layout=pnts)
 ## load the 100 m grids:
 con2 <- url("http://gsif.isric.org/lib/exe/fetch.php?media=edgeroi.grids100.rda")
-load(con2) 
+load(con2)
 str(edgeroi.grids100)
 gridded(edgeroi.grids100) <- ~x+y
 proj4string(edgeroi.grids100) <- CRS("+init=epsg:28355")

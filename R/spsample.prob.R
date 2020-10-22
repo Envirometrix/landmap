@@ -56,6 +56,7 @@
 #'                 n=length(iprob[["observations"]]))
 #' iprob2 <- spsample.prob(rnd, covs)
 #'
+#' \dontrun{
 #' ## compare the two next to each other:
 #' par(mfrow=c(1,2))
 #' plot(raster(iprob[[1]]), zlim=c(0,1), col=SAGA_pal[[1]])
@@ -79,6 +80,7 @@
 #' m0 <- lm(fs, eberg.xy)
 #' summary(m)$adj.r.squared
 #' summary(m0)$adj.r.squared
+#' }
 setMethod("spsample.prob", signature(observations = "SpatialPoints", covariates = "SpatialPixelsDataFrame"), function(observations, covariates, quant.nndist=.95, n.sigma, ...){
 
   ## mask out missing combinations:

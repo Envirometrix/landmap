@@ -58,6 +58,7 @@ rnd <- spsample(eberg_grid, type="random",
                 n=length(iprob[["observations"]]))
 iprob2 <- spsample.prob(rnd, covs)
 
+\dontrun{
 ## compare the two next to each other:
 par(mfrow=c(1,2))
 plot(raster(iprob[[1]]), zlim=c(0,1), col=SAGA_pal[[1]])
@@ -81,6 +82,7 @@ summary(m)
 m0 <- lm(fs, eberg.xy)
 summary(m)$adj.r.squared
 summary(m0)$adj.r.squared
+}
 }
 \references{
 \itemize{

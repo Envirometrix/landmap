@@ -149,9 +149,9 @@ Next we can generate predictions by using:
 
 ```r
 meuse.zinc <- predict(m)
-``
+```
 
-``r
+```r
 Predicting values using 'getStackedBaseLearnerPredictions'...TRUE
 Deriving model errors using ranger package 'quantreg' option...TRUE
 ```

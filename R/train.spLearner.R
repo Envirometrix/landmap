@@ -92,38 +92,38 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
     message("Estimating block size ID for spatial Cross Validation...", immediate. = TRUE)
   }
   r.sel <- stats::complete.cases(observations[, all.vars(formulaString)])
+  observations.s = observations[which(r.sel),all.vars(formulaString)]
   ## fit the mlr model:
   mlr::configureMlr()
   if(parallel=="multicore"){
     parallelMap::parallelStartSocket(parallel::detectCores())
   }
   message(paste0("Using learners: ", paste(SL.library, collapse = ", "), "..."), immediate. = TRUE)
+  lrns <- lapply(SL.library, mlr::makeLearner)
   if(is.factor(Y) | family$family == "binomial"){
     message("Fitting a spatial learner using 'mlr::makeClassifTask'...", immediate. = TRUE)
     if(missing(predict.type)){ predict.type = "prob" }
     if(is.null(weights)){
-      tsk <- mlr::makeClassifTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, coordinates = observations[which(r.sel),xyn])
+      tsk <- mlr::makeClassifTask(data = observations.s, target = tv, coordinates = observations[which(r.sel),xyn])
     } else {
-      tsk <- mlr::makeClassifTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn])
+      tsk <- mlr::makeClassifTask(data = observations.s, target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn])
     }
-    lrns <- lapply(SL.library, mlr::makeLearner)
     lrns <- lapply(lrns, mlr::setPredictType, "prob")
     init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, ...)
   } else {
     message("Fitting a spatial learner using 'mlr::makeRegrTask'...", immediate. = TRUE)
     if(missing(predict.type)){ predict.type = "response" }
     if(is.null(weights)){
-      tsk <- mlr::makeRegrTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, coordinates = observations[which(r.sel),xyn], blocking = id[which(r.sel)])
+      tsk <- mlr::makeRegrTask(data = observations.s, target = tv, coordinates = observations[which(r.sel),xyn], blocking = id[which(r.sel)])
     } else {
-      tsk <- mlr::makeRegrTask(data = observations[which(r.sel),all.vars(formulaString)], target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn], blocking = id[which(r.sel)])
+      tsk <- mlr::makeRegrTask(data = observations.s, target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn], blocking = id[which(r.sel)])
     }
-    lrns <- lapply(SL.library, mlr::makeLearner)
     init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, ...)
   }
   m <- mlr::train(init.m, tsk)
   if(quantreg ==TRUE & !is.factor(Y) & m$learner.model$super.model$learner$id=="regr.lm"){
     message("Fitting a quantreg model using 'ranger::ranger'...", immediate. = TRUE)
-    quantregModel  <- ranger::ranger(m$learner.model$super.model$learner.model$terms, m$learner.model$super.model$learner.model$model, num.trees=85, importance="impurity", quantreg=TRUE)
+    quantregModel <- ranger::ranger(m$learner.model$super.model$learner.model$terms, m$learner.model$super.model$learner.model$model, num.trees=85, importance="impurity", quantreg=TRUE)
   } else {
     quantregModel = NULL
   }
@@ -171,31 +171,42 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #'
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
 #'
-#' @note By default uses oblique coordinates (rotated coordinates) as described in Moller et al. (2019) "Oblique Coordinates as Covariates for Digital Soil Mapping" to account for geographical distribution of values.
+#' @note By default uses oblique coordinates (rotated coordinates) as described in \href{https://doi.org/10.5194/soil-6-269-2020}{Moller et al. (2020)} to account for geographical distribution of values.
 #' Buffer geographical distances can be added by setting \code{buffer.dist=TRUE}.
 #' Using either oblique coordinates and/or buffer distances is not recommended for point data set with distinct spatial clustering.
 #' Effects of adding geographical distances into modeling are explained in detail in \href{https://doi.org/10.7717/peerj.5518}{Hengl et al. (2018)}.
 #' Default learners used for regression are \code{c("regr.ranger", "regr.ksvm", "regr.nnet", "regr.cvglmnet")}.
 #' Default learners used for classification / binomial variables are \code{c("classif.ranger", "classif.svm", "classif.multinom")}, with \code{predict.type="prob"}.
-#' When using \code{method = "stack.cv"} each training and prediction round could produce somewhat different results due to randomisation of CV.
+#' When using \code{method = "stack.cv"} each training and prediction round could produce somewhat different results due to randomization of CV.
+#' Prediction errors are derived by default using quantreg (Quantile Regression) option in the ranger package.
 #'
 #' @examples
-#' \dontrun{
 #' library(mlr)
 #' library(rgdal)
 #' library(geoR)
 #' library(plotKML)
-#' library(raster)
-#' library(parallelMap)
 #' library(xgboost)
 #' library(kernlab)
 #' library(ranger)
-#' library(deepnet)
 #' library(glmnet)
 #' library(boot)
 #' demo(meuse, echo=FALSE)
-#'
 #' ## Regression:
+#' sl = c("regr.ranger", "regr.ksvm", "regr.cvglmnet")
+#' m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")],
+#'       lambda = 0, parallel=FALSE, SL.library = sl)
+#' summary(m@spModel$learner.model$super.model$learner.model)
+#' ## regression-matrix:
+#' str(m@vgmModel$observations@data)
+#' meuse.y <- predict(m)
+#' plot(raster(meuse.y$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
+#'    main="Predictions spLearner", axes=FALSE, box=FALSE)
+#'
+#' \dontrun{
+#' library(raster)
+#' library(parallelMap)
+#' library(deepnet)
+#' ## Regression with default settings:
 #' m <- train.spLearner(meuse["zinc"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 0)
 #' ## Ensemble model (meta-learner):
 #' summary(m@spModel$learner.model$super.model$learner.model)
