@@ -1,2 +1,7 @@
+.travis.yml
+.git
+README.md
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^docs$
+^misc$
