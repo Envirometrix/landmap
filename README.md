@@ -28,8 +28,8 @@ is explained in detail in:
 
 Use of geographical distances as features in machine learning is also explained in detail in:
 
-- Møller, A. B., Beucher, A. M., Pouladi, N., & Greve, M. H. (2019). [Oblique geographic coordinates as covariates for digital soil mapping](https://doi.org/10.5194/soil-2019-83). SOIL Discussions, 1-20.
-- Sekulić, A., Kilibarda, M., Heuvelink, G.B., Nikolić, M., Bajat, B. (2020). [Random Forest Spatial Interpolation](https://doi.org/10.3390/rs12101687). Remote Sens. 12, 1687.
+- Møller, A. B., Beucher, A. M., Pouladi, N., and Greve, M. H. (2020). [Oblique geographic coordinates as covariates for digital soil mapping](https://doi.org/10.5194/soil-6-269-2020). SOIL, 6, 269–289, https://doi.org/10.5194/soil-6-269-2020
+- Sekulić, A., Kilibarda, M., Heuvelink, G.B., Nikolić, M., Bajat, B. (2020). [Random Forest Spatial Interpolation](https://doi.org/10.3390/rs12101687). Remote Sens. 12, 1687. https://doi.org/10.3390/rs12101687
 
 ## Installing
 
