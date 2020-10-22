@@ -26,7 +26,7 @@ is explained in detail in:
 - Hengl, T., Nussbaum, M., Wright, M. N., Heuvelink, G. B., and Gräler, B. (2018). 
    [Random Forest as a generic framework for predictive modeling of spatial and spatio-temporal variables](https://doi.org/10.7717/peerj.5518). PeerJ 6:e5518.
 
-Use of geographical distances as features in machine learning is exaplained in detail in:
+Use of geographical distances as features in machine learning is also explained in detail in:
 
 - Møller, A. B., Beucher, A. M., Pouladi, N., & Greve, M. H. (2019). [Oblique geographic coordinates as covariates for digital soil mapping](https://doi.org/10.5194/soil-2019-83). SOIL Discussions, 1-20.
 - Sekulić, A., Kilibarda, M., Heuvelink, G.B., Nikolić, M., Bajat, B. (2020). [Random Forest Spatial Interpolation](https://doi.org/10.3390/rs12101687). Remote Sens. 12, 1687.
@@ -40,13 +40,14 @@ library(devtools)
 install_github("envirometrix/landmap")
 ```
 
-Under construction. Use for testing purposes only.
+Note: functions not recommended for large datasets.
 
 ## Functionality
 
 ### Automated mapping using Ensemble Machine Learning
 
-The following examples demostrates spatial prediction using the meuse data set:
+First, we need to install number of packages as Ensemble Machine Learning uses 
+several independent learners:
 
 ```r
 ls <- c("rgdal", "raster", "plotKML", "geoR", "ranger", "mlr", 
@@ -63,8 +64,16 @@ library(xgboost)
 library(kernlab)
 library(deepnet)
 library(mlr)
+```
+
+The following examples demostrates spatial prediction using the meuse data set.
+Note that we only have to specify the target point data set, covariate layers (object of class `SpatialPixelsDataFrame`) 
+and that the target variable needs a transformation `lambda = 1`, which is only required 
+for the fitting of variogram using the geoR package:
+
+```r
 demo(meuse, echo=FALSE)
-m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 1)
+m <- train.spLearner(meuse["zinc"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 1)
 ```
 
 this runs several steps:
@@ -76,7 +85,7 @@ Deriving oblique coordinates...TRUE
 Fitting a variogram using 'linkfit' and trend model...TRUE
 Estimating block size ID for spatial Cross Validation...TRUE
 Starting parallelization in mode=socket with cpus=32.
-Using learners: regr.ranger, regr.ksvm, regr.nnet, regr.cvglmnet...TRUE
+Using learners: regr.ranger, regr.xgboost, regr.nnet, regr.ksvm, regr.cvglmnet...TRUE
 Fitting a spatial learner using 'mlr::makeRegrTask'...TRUE
 Exporting objects to slaves for mode socket: .mlr.slave.options
 Mapping in parallel: mode = socket; cpus = 32; elements = 5.
@@ -85,22 +94,24 @@ Mapping in parallel: mode = socket; cpus = 32; elements = 5.
 Exporting objects to slaves for mode socket: .mlr.slave.options
 Mapping in parallel: mode = socket; cpus = 32; elements = 5.
 # weights:  103
-initial  value 5568925.436252 
-final  value 1908391.767742 
+initial  value 54927206.667240 
+final  value 20750447.509677 
 converged
+Fitting a quantreg model using 'ranger::ranger'...TRUE
 Exporting objects to slaves for mode socket: .mlr.slave.options
 Mapping in parallel: mode = socket; cpus = 32; elements = 5.
 Stopped parallelization. All cleaned up.
 ```
 
-The variogram model is only fitted to estimate effective range of spatial dependence.
+In the landmap framework, variogram model is only fitted to estimate effective range of spatial dependence, 
+which is then used to determine the size of blocks for spatial block Cross-Validation.
 Spatial Prediction models are based only on fitting the [Ensemble Machine Learning](https://koalaverse.github.io/machine-learning-in-R/stacking.html#stacking-software-in-r) 
-(by default landmap uses `c("regr.ranger", "regr.ksvm", "regr.nnet", "regr.cvglmnet")`; see [a complete list of learners available via mlr](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html)) 
+(by default landmap uses `c("regr.ranger", "regr.xgboost", "regr.ksvm", "regr.nnet", "regr.cvglmnet")`; see [a complete list of learners available via mlr](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html)) 
 with oblique coordinates (rotated coordinates) as described in [Moller et al. (2019) 
-"Oblique Coordinates as Covariates for Digital Soil Mapping"](https://www.soil-discuss.net/soil-2019-83/) to account for spatial autocorrelation in 
-values. In the landmap packagte, geographical distances to ALL points can be added 
+"Oblique Coordinates as Covariates for Digital Soil Mapping"](https://www.soil-discuss.net/soil-2019-83/) to account for spatial auto-correlation in 
+values. In the landmap package, geographical distances to ALL points can be added 
 by specifying `buffer.dist=TRUE`; this is however not recommended for large point data sets.
-The meta-learning i.e. the SuperLearner model shows which individual learners are most important:
+The meta-learning i.e. the `SuperLearner` model shows which individual learners are most important:
 
 ```r
 summary(m@spModel$learner.model$super.model$learner.model)
@@ -112,43 +123,66 @@ stats::lm(formula = f, data = d)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
--167.54  -33.91   -4.76   15.60  319.19 
+-478.73 -107.15  -30.85   67.52 1201.31 
 
 Coefficients:
-               Estimate Std. Error t value Pr(>|t|)   
-(Intercept)   831.30070  296.21487   2.806  0.00568 **
-regr.ranger     0.61053    0.21394   2.854  0.00493 **
-regr.ksvm       0.57527    0.26730   2.152  0.03299 * 
-regr.nnet      -5.49366    1.95907  -2.804  0.00571 **
-regr.cvglmnet  -0.04499    0.24123  -0.186  0.85232   
+                Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   1358.41882  622.23470   2.183 0.030592 *  
+regr.ranger      0.74741    0.20159   3.708 0.000295 ***
+regr.xgboost     0.08317    0.41544   0.200 0.841606    
+regr.nnet       -2.89762    1.33319  -2.173 0.031326 *  
+regr.ksvm        0.41938    0.22837   1.836 0.068283 .  
+regr.cvglmnet   -0.14177    0.19576  -0.724 0.470071    
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 73.79 on 150 degrees of freedom
-Multiple R-squared:  0.572,	Adjusted R-squared:  0.5606 
-F-statistic: 50.12 on 4 and 150 DF,  p-value: < 2.2e-16```
+Residual standard error: 217.1 on 149 degrees of freedom
+Multiple R-squared:  0.6616,	Adjusted R-squared:  0.6503 
+F-statistic: 58.27 on 5 and 149 DF,  p-value: < 2.2e-16
 ```
 
-in this case `regr.ranger` seems to be most important for predicting lead concentration (highest absolute t value), 
-while `regr.cvglmnet` is the least important. Overall, this ensemble model explains ca 57% of variance (based on repeated cross-validation).
+in this case `regr.ranger` seems to be most important for predicting zinc concentration (highest absolute t value), 
+while `regr.ksvm` and `regr.cvglmnet` are the least important. Overall, this ensemble model explains ca 65% of variance (based on repeated 5-fold cross-validation).
 
-Next we can generate predictions using:
+Next we can generate predictions by using:
 
 ```r
-meuse.lead <- predict(m)
+meuse.zinc <- predict(m)
+``
+
+``r
+Predicting values using 'getStackedBaseLearnerPredictions'...TRUE
+Deriving model errors using ranger package 'quantreg' option...TRUE
 ```
 
-Note that, based on the current set-up with `method = "stack.cv"`, every time you re-run the model training you 
-might get somewhat different models / different betas. On the other hand, the final ensemble predictions (map) should visually not differ too much (see below).
+Note that, based on the current set-up with `method = "stack.cv"`, so every time we re-run the model training we 
+might get somewhat different models / different betas. On the other hand, the final ensemble predictions (map) should visually not differ too much (see below). In practice, as the number of training points and features increases, 
+the predictions should not differ significantly.
 
 <img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML.png" width="650">\
-_Figure: Predicted lead content for the Meuse data set. Model error is derived as weighted standard deviation from multiple model predictions._
+_Figure: Predicted zinc content for the Meuse data set. Model error is derived using quantile regression from multiple model predictions._
 
-Animated predictions by 9 models (3x independently fitted random forest, SVM and Xgboost) looks like this 
-(the coefficients are beta coefficients from the metalearner fit: the higher the coefficient, more important the model for the ensemble merge):
+<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML_2.png" width="650">\
+_Figure: Repeated predictions for zinc content using the same settings._
+
+As a default setting, we use the quantreg (Quantile Regression) random forest implementation of the ranger package 
+to derive the prediction intervals i.e. the estimated uncertainty around a single predicted value. 
+It can be derived as:
+
+- upper and lower quantiles, and/or
+- standard deviation (assumes symmetric distribution of errors),
+
+As a default value for quantreg, landmap uses `quantiles = c((1-.682)/2, 1-(1-.682)/2)` so that s.d. can also 
+be derived from the upper and lower 68% quantile using:
+
+```r
+pred.error <- (q.upr-q.lwr)/2
+```
+
+Animated predictions by 9 models (3x independently fitted random forest, SVM and Xgboost) shows the following patterns:
 
 <img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/meuse_lead_ensemble.gif" width="400">\
-_Figure: examples of independently generated predictions._
+_Figure: Examples of independently generated predictions for lead concentration. The coefficients are beta coefficients from the meta-learner fit: the higher the coefficient, more important the model for the ensemble merge._
 
 The predictions shown in the image above incorporate spatial correlation between values, 
 and hence can be used as a possible replacement for kriging methods ([Hengl et al. 2018](https://doi.org/10.7717/peerj.5518)). Automation comes, however, at the high computing and RAM usage costs.
@@ -162,8 +196,8 @@ mR <- train.spLearner(sic1997$daily.rainfall, covariates=X, lambda=1)
 rainfall1km <- predict(mR)
 ```
 
-The processing is now much more computational because the data set consists from 467 points (hence 467 buffer distance maps need to be produced).
-This will make the regression matrix becoming extensive, and also 5x3 models need to be fitted.
+The processing is now much more computational because the data set consists from 467 points and size of grid / features is higher.
+This will make the regression matrix becoming extensive, and also 5x5 models need to be fitted.
 At the moment, using `train.spLearner` for point data set with >>1000 points should be done with caution.
 
 The final results also shows quite similar results to universal kriging in [geoR](http://leg.ufpr.br/~paulojus/geoR/). The model error map above, however, shows more spatial contrast and helps detect areas of especially high errors.
@@ -191,6 +225,15 @@ plot(stack(TAXGRSC$pred[grep("prob.", names(TAXGRSC$pred))]),
 
 <img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/eberg/predicted_classes_eberg.png" width="900">\
 _Figure: Predicted Ebergotzen soil types (probabilities)._
+
+For each class we can also derive a standard deviation of predicted probabilities by multiple 
+independently fitted learners. This shows where the model is in average most uncertain per class. 
+In the landmap package we in general recommend that [log-loss measure](https://www.r-bloggers.com/2015/12/making-sense-of-logarithmic-loss/) is used to evaluate mapping accuracy, 
+so that one can see which classes and where are the most problematic.
+
+<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/eberg/predicted_classes_eberg_errors.png" width="900">\
+_Figure: Predicted errors of the Ebergotzen soil types (probabilities)._
+
 
 Note that in the case of factor variables, prediction are based on ensemble stacking
 based on the following three classification algorithms `c("regr.ranger", "regr.xgboost", "regr.nnet")`. See mlr documentation on how to add additional [learners](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html).

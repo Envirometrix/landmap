@@ -17,13 +17,14 @@
 #' @param cell.size Block size for spatial Cross-validation,
 #' @param id Id column name to control clusters of data,
 #' @param weights Optional weights (per row) that learners will use to account for variable data quality,
+#' @param quantreg Fit additional ranger model as meta-learner to allow for derivation of prediction intervals,
 #' @param ... other arguments that can be passed on to \code{mlr::makeStackedLearner},
 #'
 #' @return Object of class \code{spLearner}
 #' @export
 #'
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
-train.spLearner.matrix <- function(observations, formulaString, covariates, SL.library, family = stats::gaussian(), method = "stack.cv", predict.type, super.learner, subsets = 5, lambda = 0.5, cov.model = "exponential", subsample = 10000, parallel = "multicore", cell.size, id = NULL, weights = NULL, ...){
+train.spLearner.matrix <- function(observations, formulaString, covariates, SL.library, family = stats::gaussian(), method = "stack.cv", predict.type, super.learner, subsets = 5, lambda = 0.5, cov.model = "exponential", subsample = 10000, parallel = "multicore", cell.size, id = NULL, weights = NULL, quantreg = TRUE, ...){
   #if(!.Platform$OS.type=="unix") { parallel <- "seq" }
   tv <- all.vars(formulaString)[1]
   if(family$family == "binomial"){
@@ -37,7 +38,7 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
   if(missing(SL.library)){
     if(is.numeric(Y) & family$family == "gaussian"){
       if(is.null(weights)){
-        SL.library <- c("regr.ranger", "regr.ksvm", "regr.nnet", "regr.cvglmnet")
+        SL.library <- c("regr.ranger", "regr.xgboost", "regr.nnet", "regr.ksvm", "regr.cvglmnet")
       } else {
         SL.library <- c("regr.ranger", "regr.xgboost", "regr.nnet")
       }
@@ -120,10 +121,16 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
     init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, ...)
   }
   m <- mlr::train(init.m, tsk)
+  if(quantreg ==TRUE & !is.factor(Y) & m$learner.model$super.model$learner$id=="regr.lm"){
+    message("Fitting a quantreg model using 'ranger::ranger'...", immediate. = TRUE)
+    quantregModel  <- ranger::ranger(m$learner.model$super.model$learner.model$terms, m$learner.model$super.model$learner.model$model, num.trees=85, importance="impurity", quantreg=TRUE)
+  } else {
+    quantregModel = NULL
+  }
   if(parallel=="multicore"){
     parallelMap::parallelStop()
   }
-  out <- methods::new("spLearner", spModel = m, vgmModel = rvgm, covariates = covariates, spID = r.sp)
+  out <- methods::new("spLearner", spModel = m, vgmModel = rvgm, covariates = covariates, spID = r.sp, quantregModel = quantregModel)
   return(out)
 }
 
@@ -189,15 +196,16 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' demo(meuse, echo=FALSE)
 #'
 #' ## Regression:
-#' m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 1)
+#' m <- train.spLearner(meuse["zinc"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 0)
 #' ## Ensemble model (meta-learner):
 #' summary(m@spModel$learner.model$super.model$learner.model)
 #' meuse.y <- predict(m)
+#' par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
 #' plot(raster(meuse.y$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
-#'    main="spLearner", axes=FALSE, box=FALSE)
+#'    main="Predictions spLearner", axes=FALSE, box=FALSE)
 #' points(meuse, pch="+")
 #' plot(raster(meuse.y$pred["model.error"]), col=rev(bpy.colors()),
-#'    main="Models sd", axes=FALSE, box=FALSE)
+#'    main="Prediction errors", axes=FALSE, box=FALSE)
 #' points(meuse, pch="+")
 #'
 #' ## Classification:
@@ -214,13 +222,14 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' data("sic1997")
 #' X <- sic1997$swiss1km[c("CHELSA_rainfall","DEM")]
 #' mR <- train.spLearner(sic1997$daily.rainfall, covariates=X, lambda=1)
+#' summary(mR@spModel$learner.model$super.model$learner.model)
 #' rainfall1km <- predict(mR)
 #' par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
 #' plot(raster(rainfall1km$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
-#'     main="spLearner", axes=FALSE, box=FALSE)
+#'     main="Predictions spLearner", axes=FALSE, box=FALSE)
 #' points(sic1997$daily.rainfall, pch="+")
 #' plot(raster(rainfall1km$pred["model.error"]), col=rev(bpy.colors()),
-#'     main="Models sd", axes=FALSE, box=FALSE)
+#'     main="Prediction errors", axes=FALSE, box=FALSE)
 #' points(sic1997$daily.rainfall, pch="+")
 #'
 #' ## Ebergotzen data set
@@ -389,20 +398,21 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
   message(paste0("Total observations: ", length(x@vgmModel$observations)))
 }
 
-#' Predict spLearner
+#' Predict using spLearner at new locations
 #'
 #' @param object of type \code{spLearner}.
-#' @param predictionLocations \code{SpatialPixelsDataFrame} with all variables.
-#' @param model.error Logical speficy if prediction errors should be derived.
+#' @param predictionLocations \code{SpatialPixelsDataFrame} with values of all features.
+#' @param model.error Logical specify if prediction errors should be derived.
 #' @param error.type Specify how should be the prediction error be derived.
-#' @param t.prob Threshold probability for signifant learners; only applyies for meta-learners based on lm model.
+#' @param t.prob Threshold probability for significant learners; only applyies for meta-learners based on lm model.
 #' @param w optional weights vector.
+#' @param quantiles list of quantiles for quantreg forest (maximum lower and upper quantile).
 #' @param ... optional parameters.
 #'
 #' @return Object of class \code{SpatialPixelsDataFrame} with predictions and model error.
 #' @method predict spLearner
 #' @export
-"predict.spLearner" <- function(object, predictionLocations, model.error=TRUE, error.type=c("weighted.sd", "interval")[1], w, t.prob=1/3, ...){
+"predict.spLearner" <- function(object, predictionLocations, model.error=TRUE, error.type=c("quantreg", "weighted.sd", "interval")[1], t.prob=1/3, w, quantiles = c((1-.682)/2, 1-(1-.682)/2), ...){
   if(any(object@spModel$task.desc$type=="classif")){
     error.type <- "weighted.sd"
   }
@@ -436,11 +446,19 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
         pred <- sp::SpatialPixelsDataFrame(predictionLocations@coords, data=cbind(out$data, data.frame(pred.prob)), grid = predictionLocations@grid, proj4string = predictionLocations@proj4string)
       } else {
         pred <- sp::SpatialPixelsDataFrame(predictionLocations@coords, data=out$data, grid=predictionLocations@grid, proj4string=predictionLocations@proj4string)
-        if(error.type=="interval"&object@spModel$learner.model$super.model$learner$id=="regr.lm"){
+        if(error.type=="interval" & object@spModel$learner.model$super.model$learner$id=="regr.lm"){
           message("Deriving prediction errors...", immediate. = TRUE)
+          ## http://www.sthda.com/english/articles/40-regression-analysis/166-predict-in-r-model-predictions-and-confidence-intervals/
           pred.int = predict(object@spModel$learner.model$super.model$learner.model, newdata = data.frame(out.c), interval = "prediction", level=2/3)
           ## assumes normal distribution
           pred$model.error <- (pred.int[,"upr"]-pred.int[,"lwr"])/2
+        }
+        if(error.type=="quantreg" & object@spModel$learner.model$super.model$learner$id=="regr.lm"){
+          message("Deriving model errors using ranger package 'quantreg' option...", immediate. = TRUE)
+          pred.q = predict(object@quantregModel, as.data.frame(out.c), type="quantiles", quantiles=quantiles)
+          pred$model.error <- (pred.q$predictions[,2]-pred.q$predictions[,1])/2
+          pred@data[,"q.lwr"] <- pred.q$predictions[,1]
+          pred@data[,"q.upr"] <- pred.q$predictions[,2]
         } else {
           message("Deriving model errors using sd of sign. learners...", immediate. = TRUE)
           ## Linear Models: the absolute value of the t-statistic for each model parameter is used: https://topepo.github.io/caret/variable-importance.html
@@ -456,10 +474,10 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
           }
         }
       }
-    return(out <- list(pred=pred, subpred=as.data.frame(out.c)))
+    return(out <- list(pred=pred, subpred=as.data.frame(out.c), quantiles=quantiles) )
     } else {
       pred <- sp::SpatialPixelsDataFrame(predictionLocations@coords, data=out$data, grid=predictionLocations@grid, proj4string = predictionLocations@proj4string)
-      return(out <- list(pred=pred, subpred=NULL))
+      return(out <- list(pred=pred, subpred=NULL, quantiles=NULL))
     }
   }
 }

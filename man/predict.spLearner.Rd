@@ -2,30 +2,33 @@
 % Please edit documentation in R/train.spLearner.R
 \name{predict.spLearner}
 \alias{predict.spLearner}
-\title{Predict spLearner}
+\title{Predict using spLearner at new locations}
 \usage{
 \method{predict}{spLearner}(
   object,
   predictionLocations,
   model.error = TRUE,
-  error.type = c("weighted.sd", "interval")[1],
-  w,
+  error.type = c("quantreg", "weighted.sd", "interval")[1],
   t.prob = 1/3,
+  w,
+  quantiles = c((1 - 0.682)/2, 1 - (1 - 0.682)/2),
   ...
 )
 }
 \arguments{
 \item{object}{of type \code{spLearner}.}
 
-\item{predictionLocations}{\code{SpatialPixelsDataFrame} with all variables.}
+\item{predictionLocations}{\code{SpatialPixelsDataFrame} with values of all features.}
 
-\item{model.error}{Logical speficy if prediction errors should be derived.}
+\item{model.error}{Logical specify if prediction errors should be derived.}
 
 \item{error.type}{Specify how should be the prediction error be derived.}
 
+\item{t.prob}{Threshold probability for significant learners; only applyies for meta-learners based on lm model.}
+
 \item{w}{optional weights vector.}
 
-\item{t.prob}{Threshold probability for signifant learners; only applyies for meta-learners based on lm model.}
+\item{quantiles}{list of quantiles for quantreg forest (maximum lower and upper quantile).}
 
 \item{...}{optional parameters.}
 }
@@ -33,5 +36,5 @@
 Object of class \code{SpatialPixelsDataFrame} with predictions and model error.
 }
 \description{
-Predict spLearner
+Predict using spLearner at new locations
 }

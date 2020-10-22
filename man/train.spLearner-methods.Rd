@@ -104,15 +104,16 @@ library(boot)
 demo(meuse, echo=FALSE)
 
 ## Regression:
-m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 1)
+m <- train.spLearner(meuse["zinc"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 0)
 ## Ensemble model (meta-learner):
 summary(m@spModel$learner.model$super.model$learner.model)
 meuse.y <- predict(m)
+par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
 plot(raster(meuse.y$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
-   main="spLearner", axes=FALSE, box=FALSE)
+   main="Predictions spLearner", axes=FALSE, box=FALSE)
 points(meuse, pch="+")
 plot(raster(meuse.y$pred["model.error"]), col=rev(bpy.colors()),
-   main="Models sd", axes=FALSE, box=FALSE)
+   main="Prediction errors", axes=FALSE, box=FALSE)
 points(meuse, pch="+")
 
 ## Classification:
@@ -129,13 +130,14 @@ spplot(meuse.soil$pred[grep("error.", names(meuse.soil$pred))],
 data("sic1997")
 X <- sic1997$swiss1km[c("CHELSA_rainfall","DEM")]
 mR <- train.spLearner(sic1997$daily.rainfall, covariates=X, lambda=1)
+summary(mR@spModel$learner.model$super.model$learner.model)
 rainfall1km <- predict(mR)
 par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
 plot(raster(rainfall1km$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
-    main="spLearner", axes=FALSE, box=FALSE)
+    main="Predictions spLearner", axes=FALSE, box=FALSE)
 points(sic1997$daily.rainfall, pch="+")
 plot(raster(rainfall1km$pred["model.error"]), col=rev(bpy.colors()),
-    main="Models sd", axes=FALSE, box=FALSE)
+    main="Prediction errors", axes=FALSE, box=FALSE)
 points(sic1997$daily.rainfall, pch="+")
 
 ## Ebergotzen data set

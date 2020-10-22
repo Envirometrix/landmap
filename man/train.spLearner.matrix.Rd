@@ -22,6 +22,7 @@ train.spLearner.matrix(
   cell.size,
   id = NULL,
   weights = NULL,
+  quantreg = TRUE,
   ...
 )
 }
@@ -57,6 +58,8 @@ train.spLearner.matrix(
 \item{id}{Id column name to control clusters of data,}
 
 \item{weights}{Optional weights (per row) that learners will use to account for variable data quality,}
+
+\item{quantreg}{Fit additional ranger model as meta-learner to allow for derivation of prediction intervals,}
 
 \item{...}{other arguments that can be passed on to \code{mlr::makeStackedLearner},}
 }
