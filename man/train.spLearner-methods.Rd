@@ -85,7 +85,8 @@ Using either oblique coordinates and/or buffer distances is not recommended for 
 Effects of adding geographical distances into modeling are explained in detail in \href{https://doi.org/10.7717/peerj.5518}{Hengl et al. (2018)}.
 Default learners used for regression are \code{c("regr.ranger", "regr.ksvm", "regr.nnet", "regr.cvglmnet")}.
 Default learners used for classification / binomial variables are \code{c("classif.ranger", "classif.svm", "classif.multinom")}, with \code{predict.type="prob"}.
-When using \code{method = "stack.cv"} each training and prediction round could produce somewhat different results due to randomisation of CV.
+When using \code{method = "stack.cv"} each training and prediction round could produce somewhat different results due to randomization of CV.
+Prediction errors are derived by default using quantreg (Quantile Regression) option in the ranger package.
 }
 \examples{
 library(mlr)
@@ -97,6 +98,7 @@ library(kernlab)
 library(ranger)
 library(glmnet)
 library(boot)
+library(raster)
 demo(meuse, echo=FALSE)
 ## Regression:
 sl = c("regr.ranger", "regr.ksvm", "regr.cvglmnet")
@@ -110,7 +112,6 @@ plot(raster(meuse.y$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
    main="Predictions spLearner", axes=FALSE, box=FALSE)
 
 \dontrun{
-library(raster)
 library(parallelMap)
 library(deepnet)
 ## Regression with default settings:

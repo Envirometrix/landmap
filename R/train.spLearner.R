@@ -190,6 +190,7 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' library(ranger)
 #' library(glmnet)
 #' library(boot)
+#' library(raster)
 #' demo(meuse, echo=FALSE)
 #' ## Regression:
 #' sl = c("regr.ranger", "regr.ksvm", "regr.cvglmnet")
@@ -203,7 +204,6 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #'    main="Predictions spLearner", axes=FALSE, box=FALSE)
 #'
 #' \dontrun{
-#' library(raster)
 #' library(parallelMap)
 #' library(deepnet)
 #' ## Regression with default settings:
