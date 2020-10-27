@@ -83,10 +83,10 @@ By default uses oblique coordinates (rotated coordinates) as described in \href{
 Buffer geographical distances can be added by setting \code{buffer.dist=TRUE}.
 Using either oblique coordinates and/or buffer distances is not recommended for point data set with distinct spatial clustering.
 Effects of adding geographical distances into modeling are explained in detail in \href{https://doi.org/10.7717/peerj.5518}{Hengl et al. (2018)}.
-Default learners used for regression are \code{c("regr.ranger", "regr.ksvm", "regr.nnet", "regr.cvglmnet")}.
-Default learners used for classification / binomial variables are \code{c("classif.ranger", "classif.svm", "classif.multinom")}, with \code{predict.type="prob"}.
+Default learners used for regression are: \code{c("regr.ranger", "regr.ksvm", "regr.nnet", "regr.cvglmnet")}.
+Default learners used for classification / binomial variables are: \code{c("classif.ranger", "classif.svm", "classif.multinom")}, with \code{predict.type="prob"}.
 When using \code{method = "stack.cv"} each training and prediction round could produce somewhat different results due to randomization of CV.
-Prediction errors are derived by default using quantreg (Quantile Regression) option in the ranger package.
+Prediction errors are derived by default using quantreg (Quantile Regression) option in the ranger package (\href{http://jmlr.org/papers/v7/meinshausen06a.html}{Meinshausen, 2006}).
 }
 \examples{
 library(mlr)

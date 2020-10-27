@@ -58,6 +58,7 @@ Fit variogram using point data
 Extends variogram fitting functionality from the geoR package.
 Can be used for 2D or 3D point data sets, with and without trend variables.
 Models need to be in the form \code{zinc ~ dist} and only numeric variables are allowed.
+Often reports \code{Singular matrix. Covariates may have different orders of magnitude.} if the covariates are perfectly aligned.
 }
 \examples{
 library(raster)
@@ -65,6 +66,8 @@ library(rgdal)
 library(geoR)
 demo(meuse, echo=FALSE)
 vgm = fit.vgmModel(zinc~dist, as.data.frame(meuse), meuse.grid["dist"], lambda=1)
+plot(variog(vgm$geodata))
+lines(vgm$vgm)
 }
 \author{
 \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}

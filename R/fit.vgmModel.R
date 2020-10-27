@@ -24,6 +24,7 @@
 #' @note Extends variogram fitting functionality from the geoR package.
 #' Can be used for 2D or 3D point data sets, with and without trend variables.
 #' Models need to be in the form \code{zinc ~ dist} and only numeric variables are allowed.
+#' Often reports \code{Singular matrix. Covariates may have different orders of magnitude.} if the covariates are perfectly aligned.
 #'
 #' @examples
 #' library(raster)
@@ -31,6 +32,8 @@
 #' library(geoR)
 #' demo(meuse, echo=FALSE)
 #' vgm = fit.vgmModel(zinc~dist, as.data.frame(meuse), meuse.grid["dist"], lambda=1)
+#' plot(variog(vgm$geodata))
+#' lines(vgm$vgm)
 setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "data.frame", predictionDomain = "SpatialPixelsDataFrame"), function(formulaString.vgm, rmatrix, predictionDomain, cov.model = "exponential", dimensions = list("2D", "3D", "2D+T", "3D+T"), lambda = 0.5, psiR = NULL, subsample = nrow(rmatrix), ini.var, ini.range, fix.psiA = FALSE, fix.psiR = FALSE, ...){
 
   if(missing(dimensions)){ dimensions <- dimensions[[1]] }
@@ -122,10 +125,10 @@ setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "da
     rvgm <- list(cov.model="nugget", lambda=lambda, practicalRange=ini.range)
     if(length(all.vars(formulaString.vgm))==1){
       message("Fitting a variogram using 'linkfit'...", immediate. = TRUE)
-      try( rvgm <- geoR::likfit(x.geo, lambda = lambda, messages = FALSE, ini = c(ini.stats::var, ini.range), cov.model = cov.model) )
+      try( rvgm <- geoR::likfit(x.geo, lambda = lambda, messages = FALSE, ini = c(ini.stats::var, ini.range), cov.model = cov.model), silent = TRUE )
     } else {
       message("Fitting a variogram using 'linkfit' and trend model...", immediate. = TRUE)
-      try( rvgm <- geoR::likfit(x.geo, lambda = lambda, messages = FALSE, trend = tcovs, ini = c(ini.var, ini.range), fix.psiA = FALSE, fix.psiR = FALSE, cov.model = cov.model) )
+      try( rvgm <- geoR::likfit(x.geo, lambda = lambda, messages = FALSE, trend = tcovs, ini = c(ini.var, ini.range), fix.psiA = FALSE, fix.psiR = FALSE, cov.model = cov.model, lik.met = "REML"), silent = TRUE )
     }
     if(class(.Last.value)[1]=="try-error"){
       warning("Variogram model could not be fitted.")
@@ -133,5 +136,5 @@ setMethod("fit.vgmModel", signature(formulaString.vgm = "formula", rmatrix = "da
   } else {
     rvgm <- list(cov.model="nugget", lambda=lambda, practicalRange=NA)
   }
-  return(list(vgm=rvgm, observations=points))
+  return(list(vgm=rvgm, observations=points, geodata=x.geo))
 })

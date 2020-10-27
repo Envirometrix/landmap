@@ -7,7 +7,7 @@ Description: Functions and tools for spatial interpolation and/or prediction of 
    Environmental Layers (www.OpenLandMap.org) produced by the OpenGeoHub.org foundation and collaborators. Some functions have been migrated and adopted from the GSIF
    (Global Soil Information Facilities) package.
 Depends: R (>= 3.5.0)
-License: file LICENSE
+License: GPL
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/envirometrix/landmap/
@@ -16,7 +16,6 @@ Imports:
     methods,
     utils,
     parallel,
-    fossil,
     geoR,
     matrixStats,
     ranger,
@@ -25,11 +24,12 @@ Imports:
     mlr,
     parallelMap,
     sp,
+    spdep,
     rgdal,
     gdalUtils,
     raster,
     psych
-Suggests: xgboost, kernlab, nnet, rjson, spatstat, maptools, maxlike, RCurl, aqp, deepnet, RSAGA, soiltexture, snowfall, plotKML, boot
+Suggests: fossil, xgboost, kernlab, nnet, rjson, spatstat, maptools, maxlike, RCurl, aqp, deepnet, RSAGA, soiltexture, snowfall, plotKML, boot
 RoxygenNote: 7.1.1
 SystemRequirements: C++11, GDAL (>= 2.0.1), GEOS (>= 3.4.0),
     PROJ (>= 4.8.0)

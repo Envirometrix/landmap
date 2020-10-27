@@ -52,7 +52,7 @@ setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file
     } else {
       outname <- paste(plotKML::normalizeFilename(deparse(substitute(x, env = parent.frame()))), j, sep="_")
     }
-    try(system(paste(program, shortPathName(normalizePath(raster::filename(x))), RSAGA::set.file.extension(outname, ".tif"), '-te',  y[j,1], y[j,2], y[j,3], y[j,4]), show.output.on.console = show.output.on.console))
+    try(system(paste(program, utils::shortPathName(normalizePath(raster::filename(x))), RSAGA::set.file.extension(outname, ".tif"), '-te',  y[j,1], y[j,2], y[j,3], y[j,4]), show.output.on.console = show.output.on.console))
     try(x.lst[[j]] <- raster::raster(RSAGA::set.file.extension(outname, ".tif")))
   }
   return(x.lst)
@@ -151,12 +151,12 @@ setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file
       }
     }
     if(file.exists(paste0("C:/PROGRA~1/GDAL/", utility, ".exe"))&.Platform$OS.type == "windows"){
-      program = shQuote(shortPathName(normalizePath(file.path("C:/PROGRA~1/GDAL/", paste0(utility, ".exe")))))
+      program = shQuote(utils::shortPathName(normalizePath(file.path("C:/PROGRA~1/GDAL/", paste0(utility, ".exe")))))
     }
   }
 
   if(.Platform$OS.type == "windows") {
-    program = shQuote(shortPathName(normalizePath(file.path(path, paste(utility, ".exe", sep="")))))
+    program = shQuote(utils::shortPathName(normalizePath(file.path(path, paste(utility, ".exe", sep="")))))
   } else {
     program = utility
   }

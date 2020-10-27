@@ -12,7 +12,7 @@ The \code{edgeroi} data set contains two data frames --- sites and horizons. Sit
   \item{\code{SOURCEID}}{factor; unique label to help a user identify a particular site (\code{ID} in the \href{http://www.asris.csiro.au/mapping/hyperdocs/NatSoil/}{NatSoil})}
   \item{\code{LONGDA94}}{numeric; longitude in decimal degrees on the GDA94 datum}
   \item{\code{LATGDA94}}{numeric; latitude in decimal degrees on the GDA94 datum}
-  \item{\code{TAXGAUC}}{factor; \href{https://www.clw.csiro.au/aclep/}{Australian Great Soil Groups} (GSG; see details)}
+  \item{\code{TAXGAUC}}{factor; Australian Great Soil Groups (GSG; see details)}
   \item{\code{NOTEOBS}}{character; free-form observation notes}
 }
 Horizons table contains the following columns:
