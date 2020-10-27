@@ -178,7 +178,7 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' Default learners used for regression are: \code{c("regr.ranger", "regr.ksvm", "regr.nnet", "regr.cvglmnet")}.
 #' Default learners used for classification / binomial variables are: \code{c("classif.ranger", "classif.svm", "classif.multinom")}, with \code{predict.type="prob"}.
 #' When using \code{method = "stack.cv"} each training and prediction round could produce somewhat different results due to randomization of CV.
-#' Prediction errors are derived by default using quantreg (Quantile Regression) option in the ranger package (\href{http://jmlr.org/papers/v7/meinshausen06a.html}{Meinshausen, 2006}).
+#' Prediction errors are derived by default using quantreg (Quantile Regression) option in the ranger package (\href{https://jmlr.org/papers/v7/meinshausen06a.html}{Meinshausen, 2006}).
 #'
 #' @examples
 #' library(mlr)
@@ -193,17 +193,17 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' library(raster)
 #' demo(meuse, echo=FALSE)
 #' ## Regression:
-#' sl = c("regr.ranger", "regr.ksvm", "regr.cvglmnet")
+#' sl = c("regr.nnet", "regr.ksvm", "regr.cvglmnet")
 #' m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")],
 #'       lambda = 0, parallel=FALSE, SL.library = sl)
 #' summary(m@spModel$learner.model$super.model$learner.model)
+#' \dontrun{
 #' ## regression-matrix:
 #' str(m@vgmModel$observations@data)
 #' meuse.y <- predict(m)
 #' plot(raster(meuse.y$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
 #'    main="Predictions spLearner", axes=FALSE, box=FALSE)
 #'
-#' \dontrun{
 #' library(parallelMap)
 #' library(deepnet)
 #' ## Regression with default settings:

@@ -4,10 +4,10 @@ Version: 0.0.4
 Authors@R: person("Tomislav", "Hengl", email = "tom.hengl@opengeohub.org", role = c("aut", "cre"))
 Description: Functions and tools for spatial interpolation and/or prediction of environmental variables (points to grids) 
    based on using Ensemble Machine Learning with geographical distances. Package also provides access to Global 
-   Environmental Layers (www.OpenLandMap.org) produced by the OpenGeoHub.org foundation and collaborators. Some functions have been migrated and adopted from the previous GSIF
-   (Global Soil Information Facilities) package.
+   Environmental Layers (<https://www.OpenLandMap.org>) produced by the OpenGeoHub.org foundation and collaborators. Some functions have been migrated and adopted from the
+   Global Soil Information Facilities package.
 Depends: R (>= 3.5.0)
-License: GPL-3 + file LICENSE
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/envirometrix/landmap/

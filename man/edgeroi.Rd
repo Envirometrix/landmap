@@ -81,15 +81,19 @@ sites <- spTransform(sites, CRS("+init=epsg:28355"))
 ## plot points and grids:
 pnts <- list("sp.points", sites, pch="+", col="black")
 ## load the 250 m grids:
-con <- url("http://gsif.isric.org/lib/exe/fetch.php?media=edgeroi.grids.rda")
-load(con)
+library(RCurl)
+rep = "https://raw.github.com/Envirometrix/PredictiveSoilMapping/master/extdata/"
+x = tempfile(fileext = ".rda")
+con <- download.file(paste0(rep, "edgeroi.grids.rda"), x, method="wget")
+load(x)
 str(edgeroi.grids)
 gridded(edgeroi.grids) <- ~x+y
 proj4string(edgeroi.grids) <- CRS("+init=epsg:28355")
 spplot(edgeroi.grids[1], sp.layout=pnts)
 ## load the 100 m grids:
-con2 <- url("http://gsif.isric.org/lib/exe/fetch.php?media=edgeroi.grids100.rda")
-load(con2)
+x2 = tempfile(fileext = ".rda")
+con2 <- download.file(paste0(rep, "edgeroi.grids100.rda"), x2, method="wget")
+load(x2)
 str(edgeroi.grids100)
 gridded(edgeroi.grids100) <- ~x+y
 proj4string(edgeroi.grids100) <- CRS("+init=epsg:28355")
