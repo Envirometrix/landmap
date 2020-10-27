@@ -1,7 +1,7 @@
 # landmap package for R
 
 [![Build Status](https://travis-ci.org/Envirometrix/landmap.svg?branch=master)](https://travis-ci.org/Envirometrix/landmap)
-[![R build status](https://github.com/Envirometrix/plotKML/workflows/R-CMD-check/badge.svg)](https://github.com/Envirometrix/landmap/actions)
+[![R build status](https://github.com/Envirometrix/landmap/workflows/R/badge.svg)](https://github.com/Envirometrix/landmap/actions)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/landmap)](https://cran.r-project.org/package=landmap)
 [![Github_Status_Badge](https://img.shields.io/badge/Github-0.0--3-blue.svg)](https://github.com/Envirometrix/landmap)
 
