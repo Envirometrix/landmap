@@ -442,6 +442,7 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
         if(any(class(object@spModel$learner.model$super.model$learner.model) %in% "glmnet") & length(lvs)>2){
           w.v = .glmnet.varImp(object@spModel$learner.model$super.model$learner.model)
           ## model error
+          message("Deriving model errors using sd of sign. learners...", immediate. = TRUE)
           for(j in lvs){
             out.c0 = out.c[,grep(paste0(".", j), attr(out.c, "dimnames")[[2]])]
             wt = w.v$x[match(attr(out.c0, "dimnames")[[2]], w.v$Group.1)]

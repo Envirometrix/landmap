@@ -32,6 +32,8 @@ Use of geographical distances as features in machine learning is also explained 
 - Møller, A. B., Beucher, A. M., Pouladi, N., and Greve, M. H. (2020). [Oblique geographic coordinates as covariates for digital soil mapping](https://doi.org/10.5194/soil-6-269-2020). SOIL, 6, 269–289, https://doi.org/10.5194/soil-6-269-2020
 - Sekulić, A., Kilibarda, M., Heuvelink, G.B., Nikolić, M., Bajat, B. (2020). [Random Forest Spatial Interpolation](https://doi.org/10.3390/rs12101687). Remote Sens. 12, 1687. https://doi.org/10.3390/rs12101687
 
+A detailed tutorial on how to use landmap package to generate predictions / interpolated point data sets is available **[here](https://gitlab.com/openlandmap/spatial-predictions-using-eml)**.
+
 ## Installing
 
 Install development versions from github:
@@ -182,7 +184,7 @@ pred.error <- (q.upr-q.lwr)/2
 
 Animated predictions by 9 models (3x independently fitted random forest, SVM and Xgboost) shows the following patterns:
 
-<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/meuse_lead_ensemble.gif" width="400">\
+<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/meuse_lead_ensemble.gif" width="400" />
 _Figure: Examples of independently generated predictions for lead concentration. The coefficients are beta coefficients from the meta-learner fit: the higher the coefficient, more important the model for the ensemble merge._
 
 The predictions shown in the image above incorporate spatial correlation between values, 
@@ -245,7 +247,7 @@ In summary: package mlr provides a comprehensive environment for Machine Learnin
 - Additional [learners](https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html) can be added,
 - Processing can be parallelized using the [parallelMap package](https://mlr.mlr-org.com/articles/tutorial/parallelization.html),
 
-Ensemble Machine Learning is also available via the [subsemble](https://github.com/ledell/subsemble) and the [SuperLearner](https://github.com/ecpolley/SuperLearner) packages (not used here).
+Ensemble Machine Learning is also available via the [subsemble](https://github.com/ledell/subsemble) and the [SuperLearner](https://github.com/ecpolley/SuperLearner) packages (not used here). For more info about Ensemble Machine Learning refer to this **[tutorial](https://gitlab.com/openlandmap/spatial-predictions-using-eml)**.
 
 ### Accessing LandGIS layers
 
