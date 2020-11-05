@@ -34,11 +34,12 @@ object of class \code{SpatialPixelsDataFrame} with distances to points
 Derive buffer distances using the \code{raster::distance} function, so that these can be used as predictors for spatial prediction i.e. to account for spatial proximity to low, medium and high values.
 }
 \examples{
-\dontrun{
+\donttest{
 library(raster)
 library(rgdal)
 demo(meuse, echo=FALSE)
-b <- buffer.dist(meuse["zinc"], meuse.grid[1], classes=as.factor(1:nrow(meuse)))
+b <- buffer.dist(meuse["zinc"], meuse.grid[1],
+        classes=as.factor(1:nrow(meuse)), parallel=FALSE)
 }
 }
 \author{

@@ -42,16 +42,8 @@ image(meuse.grid)
 lines(as(tl, "SpatialLines"))
 ## all at once:
 pix.lst <- tile(meuse.grid, block.x=1000)
-\dontrun{## lines:
+\donttest{
   library(plotKML)
-  data(eberg_contours)
-  line.lst <- tile(eberg_contours, block.x=5000)
-  spplot(line.lst[[1]][2])
-  ## polygons:
-  data(eberg_zones)
-  ## this one requires ogr2ogr function:
-  pol.lst <- tile(eberg_zones, block.x=5000)
-  spplot(pol.lst[[1]][1])
   ## raster files via rgdal:
   library(rgdal)
   fn = system.file("pictures/SP27GTIF.TIF",

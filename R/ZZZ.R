@@ -1,6 +1,6 @@
 
 .onLoad <- function(libname, pkgname) {
-  utils::data("landgis.tables", package=pkgname, envir=parent.env(environment()))
+  utils::data("soil.classes", "munsell", "USDA.TT.im", "landgis.tables", package=pkgname, envir=parent.env(environment()))
 }
 
 .onAttach <- function(lib, pkg)  {

@@ -77,7 +77,7 @@ coordinates(sites) <- ~ LONGDA94 + LATGDA94
 proj4string(sites) <- CRS("+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs")
 sites <- spTransform(sites, CRS("+init=epsg:28355"))
 
-\dontrun{
+\donttest{
 ## plot points and grids:
 pnts <- list("sp.points", sites, pch="+", col="black")
 ## load the 250 m grids:

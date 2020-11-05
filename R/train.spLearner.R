@@ -197,7 +197,7 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")],
 #'       lambda = 0, parallel=FALSE, SL.library = sl)
 #' summary(m@spModel$learner.model$super.model$learner.model)
-#' \dontrun{
+#' \donttest{
 #' ## regression-matrix:
 #' str(m@vgmModel$observations@data)
 #' meuse.y <- predict(m)
@@ -207,22 +207,25 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' library(parallelMap)
 #' library(deepnet)
 #' ## Regression with default settings:
-#' m <- train.spLearner(meuse["zinc"], covariates=meuse.grid[,c("dist","ffreq")], lambda = 0)
+#' m <- train.spLearner(meuse["zinc"], covariates=meuse.grid[,c("dist","ffreq")],
+#'         parallel=FALSE, lambda = 0)
 #' ## Ensemble model (meta-learner):
 #' summary(m@spModel$learner.model$super.model$learner.model)
 #' meuse.y <- predict(m)
-#' par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
+#' op <- par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
 #' plot(raster(meuse.y$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
 #'    main="Predictions spLearner", axes=FALSE, box=FALSE)
 #' points(meuse, pch="+")
 #' plot(raster(meuse.y$pred["model.error"]), col=rev(bpy.colors()),
 #'    main="Prediction errors", axes=FALSE, box=FALSE)
 #' points(meuse, pch="+")
+#' par(op)
+#' dev.off()
 #'
 #' ## Classification:
 #' SL.library <- c("classif.ranger", "classif.xgboost", "classif.nnTrain")
 #' mC <- train.spLearner(meuse["soil"], covariates=meuse.grid[,c("dist","ffreq")],
-#'    SL.library = SL.library, super.learner = "classif.glmnet")
+#'    SL.library = SL.library, super.learner = "classif.glmnet", parallel=FALSE)
 #' meuse.soil <- predict(mC)
 #' spplot(meuse.soil$pred[grep("prob.", names(meuse.soil$pred))],
 #'         col.regions=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
@@ -232,16 +235,17 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' ## SIC1997
 #' data("sic1997")
 #' X <- sic1997$swiss1km[c("CHELSA_rainfall","DEM")]
-#' mR <- train.spLearner(sic1997$daily.rainfall, covariates=X, lambda=1)
+#' mR <- train.spLearner(sic1997$daily.rainfall, covariates=X, lambda=1, parallel=FALSE)
 #' summary(mR@spModel$learner.model$super.model$learner.model)
 #' rainfall1km <- predict(mR)
-#' par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
+#' op <- par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
 #' plot(raster(rainfall1km$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
 #'     main="Predictions spLearner", axes=FALSE, box=FALSE)
 #' points(sic1997$daily.rainfall, pch="+")
 #' plot(raster(rainfall1km$pred["model.error"]), col=rev(bpy.colors()),
 #'     main="Prediction errors", axes=FALSE, box=FALSE)
 #' points(sic1997$daily.rainfall, pch="+")
+#' par(op)
 #'
 #' ## Ebergotzen data set
 #' data(eberg_grid)
@@ -257,7 +261,7 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' eberg$Parabraunerde <- ifelse(eberg$TAXGRSC=="Parabraunerde", 1, 0)
 #' X <- eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")]
 #' mB <- train.spLearner(eberg["Parabraunerde"], covariates=X,
-#'    family=binomial(), cov.model = "nugget")
+#'    family=binomial(), cov.model = "nugget", parallel=FALSE)
 #' eberg.Parabraunerde <- predict(mB)
 #' plot(raster(eberg.Parabraunerde$pred["prob.1"]),
 #'    col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
@@ -268,12 +272,13 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' coordinates(eberg) <- ~X+Y
 #' proj4string(eberg) <- CRS("+init=epsg:31467")
 #' X <- eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")]
-#' mF <- train.spLearner(eberg["TAXGRSC"], covariates=X)
+#' mF <- train.spLearner(eberg["TAXGRSC"], covariates=X, parallel=FALSE)
 #' TAXGRSC <- predict(mF)
 #' plot(stack(TAXGRSC$pred[grep("prob.", names(TAXGRSC$pred))]),
 #'     col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
 #' plot(stack(TAXGRSC$pred[grep("error.", names(TAXGRSC$pred))]),
 #'     col=SAGA_pal[["SG_COLORS_YELLOW_BLUE"]], zlim=c(0,0.45))
+#' dev.off()
 #' }
 #' @export
 #' @docType methods

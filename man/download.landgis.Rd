@@ -37,25 +37,7 @@ Locally downloaded GeoTIFF.
 Access and download layers from OpenLandMap.org (LandGIS data service)
 }
 \examples{
-library(plotKML)
-library(rgdal)
-data("sic1997")
 search.landgis(pattern=c("clay", "10..10cm"))
-search.landgis(pattern=c("clay", "10..10cm"))
-\dontrun{
-coverageId = "predicted250m:sol_clay.wfraction_usda.3a1a1a_m_250m_b10..10cm_1950..2017_v0.2"
-swiss1km.ll <- raster::projectRaster(raster(sic1997$swiss1km[2]),
-                   crs = "+init=epsg:4326", res=c(1/120, 1/120))
-s1 = paste0("Lat(", swiss1km.ll@extent@ymin, ",", swiss1km.ll@extent@ymax,")")
-s2 = paste0("Long(", swiss1km.ll@extent@xmin, ",", swiss1km.ll@extent@xmax,")")
-sf = (1/480)/(1/120)
-download.landgis(coverageId, filename = "clay_ch1km.tif", subset = c(s1,s2), scalefactor = sf)
-swiss1km.ll1km <- as(swiss1km.ll, "SpatialGridDataFrame")
-swiss1km.ll1km$clay_10..10cm <- readGDAL("clay_ch1km.tif")$band1
-swiss1km.ll1km$clay_10..10cm <- ifelse(is.na(swiss1km.ll1km$DEM), NA, swiss1km.ll1km$clay_10..10cm)
-plot(swiss1km.ll1km["clay_10..10cm"])
-## mapview(swiss1km.ll1km["clay_10..10cm"])
-}
 }
 \author{
 \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}

@@ -1,4 +1,4 @@
-#' landmap: Automated spatial prediction and/or interpolation using Ensemble Machine Learning
+#' landmap: Automated Spatial Prediction using Ensemble Machine Learning
 #'
 #' Geographical distances can be used with remote sensing covariates and process-based derivatives
 #' to improve spatial prediction and/or interpolation from point data. This package shows how to

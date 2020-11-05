@@ -1,7 +1,6 @@
 \name{USDA.TT.im}
 \docType{data}
 \alias{USDA.TT.im}
-\alias{TT2tri}
 \title{Probability density for texture triangle}
 \description{Probability density for texture triangle (USDA system) based on global soil profile data (see ISRIC WoSIS).}
 \usage{data(USDA.TT.im)}
@@ -27,12 +26,5 @@ library(sp)
 data(USDA.TT.im)
 gridded(USDA.TT.im) <- ~s1+s2
 spplot(USDA.TT.im["v"])
-
-\dontrun{library(soiltexture)
-## convert textures by hand to sand, silt and clay:
-TEXMHT <- c("CL","C","SiL","SiL","missing")
-x <- TT2tri(TEXMHT)
-x
-}
 }
 \keyword{datasets}

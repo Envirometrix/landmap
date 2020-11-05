@@ -2,6 +2,7 @@
 
 S3method(predict,spLearner)
 S3method(print,spLearner)
+export(TT2tri)
 export(download.landgis)
 export(makeTiles)
 export(model.data)

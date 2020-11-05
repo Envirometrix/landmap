@@ -26,6 +26,7 @@
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
 #'
 #' @examples
+#' \donttest{
 #' library(plotKML)
 #' library(maxlike)
 #' library(spatstat)
@@ -56,13 +57,14 @@
 #'                 n=length(iprob[["observations"]]))
 #' iprob2 <- spsample.prob(rnd, covs)
 #'
-#' \dontrun{
 #' ## compare the two next to each other:
-#' par(mfrow=c(1,2))
+#' op <- par(mfrow=c(1,2))
 #' plot(raster(iprob[[1]]), zlim=c(0,1), col=SAGA_pal[[1]])
 #' points(iprob[["observations"]])
 #' plot(raster(iprob2[[1]]), zlim=c(0,1), col=SAGA_pal[[1]])
 #' points(iprob2[["observations"]])
+#' par(op)
+#' dev.off()
 #'
 #' ## fit a weighted lm:
 #' eberg.xy <- eberg[sel,c("SNDMHT_A","X","Y")]
