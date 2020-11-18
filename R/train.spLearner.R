@@ -10,7 +10,7 @@
 #' @param predict.type Prediction type 'prob' or 'response',
 #' @param super.learner Ensemble stacking model usually \code{regr.lm},
 #' @param subsets Number of subsets for repeated CV,
-#' @param lambda Target variable transformation (0.5 or 1),
+#' @param lambda Target variable transformation for geoR (0.5 or 1),
 #' @param cov.model Covariance model for variogram fitting,
 #' @param subsample For large datasets consider random subsetting training data,
 #' @param parallel Initiate parellel processing,
@@ -109,18 +109,22 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
       tsk <- mlr::makeClassifTask(data = observations.s, target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn])
     }
     lrns <- lapply(lrns, mlr::setPredictType, "prob")
-    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, ...)
+    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, resampling=mlr::makeResampleDesc(method = "CV", blocking.cv=TRUE), ...)
   } else {
     message("Fitting a spatial learner using 'mlr::makeRegrTask'...", immediate. = TRUE)
     if(missing(predict.type)){ predict.type = "response" }
+    if(any(SL.library %in% "regr.xgboost")){
+      ## https://github.com/dmlc/xgboost/issues/4599
+      lrns[[which(SL.library %in% "regr.xgboost")]] = mlr::makeLearner("regr.xgboost", par.vals = list(objective ='reg:squarederror'))
+    }
     if(is.null(weights)){
       tsk <- mlr::makeRegrTask(data = observations.s, target = tv, coordinates = observations[which(r.sel),xyn], blocking = id[which(r.sel)])
     } else {
       tsk <- mlr::makeRegrTask(data = observations.s, target = tv, weights = weights[which(r.sel)], coordinates = observations[which(r.sel),xyn], blocking = id[which(r.sel)])
     }
-    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, ...)
+    init.m <- mlr::makeStackedLearner(base.learners = lrns, predict.type = predict.type, method = method, super.learner = super.learner, resampling=mlr::makeResampleDesc(method = "CV", blocking.cv=TRUE), ...)
   }
-  m <- mlr::train(init.m, tsk)
+  suppressWarnings( m <- mlr::train(init.m, tsk) )
   if(quantreg ==TRUE & !is.factor(Y) & m$learner.model$super.model$learner$id=="regr.lm"){
     message("Fitting a quantreg model using 'ranger::ranger'...", immediate. = TRUE)
     quantregModel <- ranger::ranger(m$learner.model$super.model$learner.model$terms, m$learner.model$super.model$learner.model$model, num.trees=85, importance="impurity", quantreg=TRUE)
@@ -155,7 +159,7 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' @param lambda Target variable transformation (0.5 or 1),
 #' @param cov.model Covariance model for variogram fitting,
 #' @param subsample For large datasets consider random subsetting training data,
-#' @param parallel Initiate parellel processing,
+#' @param parallel logical, Initiate parallel processing,
 #' @param buffer.dist Specify whether to use buffer distances to points as covariates,
 #' @param oblique.coords Specify whether to use oblique coordinates as covariates,
 #' @param theta.list List of angles (in radians) used to derive oblique coordinates,
@@ -193,9 +197,9 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' library(raster)
 #' demo(meuse, echo=FALSE)
 #' ## Regression:
-#' sl = c("regr.nnet", "regr.ksvm", "regr.cvglmnet")
+#' sl = c("regr.ranger", "regr.nnet", "regr.ksvm")
 #' m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")],
-#'       lambda = 0, parallel=FALSE, SL.library = sl)
+#'       lambda=0, parallel=FALSE, SL.library=sl)
 #' summary(m@spModel$learner.model$super.model$learner.model)
 #' \donttest{
 #' ## regression-matrix:
@@ -435,11 +439,11 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
   if(missing(predictionLocations)){
     predictionLocations <- object@covariates
   }
-  out <- predict(object@spModel, newdata=predictionLocations@data)
+  out <- predict(object@spModel, newdata=predictionLocations@data[,object@spModel$features])
   if(any(class(object@spModel)=="BaseEnsembleModel")){
     if(model.error==TRUE){
       message("Predicting values using 'getStackedBaseLearnerPredictions'...", immediate. = TRUE)
-      out.c <- as.matrix(as.data.frame(mlr::getStackedBaseLearnerPredictions(object@spModel, newdata=predictionLocations@data)))
+      out.c <- as.matrix(as.data.frame(mlr::getStackedBaseLearnerPredictions(object@spModel, newdata=predictionLocations@data[,object@spModel$features])))
       if(any(object@spModel$task.desc$type=="classif")){
         lvs <- object@spModel$task.desc$class.levels
         ## estimate weights:

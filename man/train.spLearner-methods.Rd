@@ -55,7 +55,7 @@
 
 \item{subsample}{For large datasets consider random subsetting training data,}
 
-\item{parallel}{Initiate parellel processing,}
+\item{parallel}{logical, Initiate parallel processing,}
 
 \item{buffer.dist}{Specify whether to use buffer distances to points as covariates,}
 
@@ -101,9 +101,9 @@ library(boot)
 library(raster)
 demo(meuse, echo=FALSE)
 ## Regression:
-sl = c("regr.nnet", "regr.ksvm", "regr.cvglmnet")
+sl = c("regr.ranger", "regr.nnet", "regr.ksvm")
 m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")],
-      lambda = 0, parallel=FALSE, SL.library = sl)
+      lambda=0, parallel=FALSE, SL.library=sl)
 summary(m@spModel$learner.model$super.model$learner.model)
 \donttest{
 ## regression-matrix:

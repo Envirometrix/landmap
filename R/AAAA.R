@@ -64,6 +64,10 @@ if (!isGeneric("train.spLearner")){
   setGeneric("train.spLearner", function(observations, formulaString, covariates, ...){standardGeneric("train.spLearner")})
 }
 
+if (!isGeneric("tune.spLearner")){
+  setGeneric("tune.spLearner", function(object, ...){standardGeneric("tune.spLearner")})
+}
+
 if (!isGeneric("fit.vgmModel")){
   setGeneric("fit.vgmModel", function(formulaString.vgm, rmatrix, predictionDomain, ...){standardGeneric("fit.vgmModel")})
 }
