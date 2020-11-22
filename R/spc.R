@@ -1,6 +1,7 @@
 #' Generate Principal Components using SpatialPixelsDataFrame object
 #'
 #' @aliases spc
+#' @rdname spc
 #'
 #' @description Combines the \code{stats::prcomp} method and predicts a list principal components for an object of type \code{"SpatialPixelsDataFrame"}.
 #'

@@ -1,6 +1,6 @@
 Package: landmap
 Title: Automated Spatial Prediction using Ensemble Machine Learning
-Version: 0.0.6
+Version: 0.0.7
 Authors@R: person("Tomislav", "Hengl", email = "tom.hengl@opengeohub.org", role = c("aut", "cre"))
 Description: Functions and tools for spatial interpolation and/or prediction of environmental variables (points to grids) 
    based on using Ensemble Machine Learning with geographical distances. Package also provides access to Global 

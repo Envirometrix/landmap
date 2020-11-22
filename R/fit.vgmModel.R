@@ -1,6 +1,7 @@
 #' Fit variogram using point data
 #'
-#' @aliases fit.vgmModel
+#' @rdname fit.vgmModel
+#' @aliases fit.vgmModel fit.vgmModel,formula,data.frame,SpatialPixelsDataFrame-method
 #'
 #' @param formulaString.vgm formula.
 #' @param rmatrix data.frame with coordinates and values of covariates.

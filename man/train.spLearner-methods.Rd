@@ -189,6 +189,13 @@ plot(stack(TAXGRSC$pred[grep("error.", names(TAXGRSC$pred))]),
 dev.off()
 }
 }
+\references{
+\itemize{
+  \item Moller, A. B., Beucher, A. M., Pouladi, N., and Greve, M. H. (2020). \href{https://doi.org/10.5194/soil-6-269-2020}{Oblique geographic coordinates as covariates for digital soil mapping}. SOIL, 6, 269–289.
+  \item Hengl, T., Nussbaum, M., Wright, M. N., Heuvelink, G. B., and Graler, B. (2018) \href{https://doi.org/10.7717/peerj.5518}{Random Forest as a generic framework for predictive modeling of spatial and spatio-temporal variables}. PeerJ 6:e5518.
+  \item Meinshausen, N. (2006). \href{https://jmlr.org/papers/v7/meinshausen06a.html}{Quantile regression forests}. Journal of Machine Learning Research, 7(Jun), 983–999. https://jmlr.org/papers/v7/meinshausen06a.html
+}
+}
 \author{
 \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
 }

@@ -60,6 +60,10 @@ if(!isGeneric("spsample.prob")){
   setGeneric("spsample.prob", function(observations, covariates, ...){standardGeneric("spsample.prob")})
 }
 
+if (!isGeneric("sample.grid")){
+  setGeneric("sample.grid", function(obj, ...){standardGeneric("sample.grid")})
+}
+
 if (!isGeneric("train.spLearner")){
   setGeneric("train.spLearner", function(observations, formulaString, covariates, ...){standardGeneric("train.spLearner")})
 }

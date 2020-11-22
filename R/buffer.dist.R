@@ -1,6 +1,7 @@
 #' Derive buffer distances for a list of points
 #'
-#' @aliases buffer.dist
+#' @rdname buffer.dist-methods
+#' @aliases buffer.dist buffer.dist,SpatialPointsDataFrame,SpatialPixelsDataFrame-method
 #'
 #' @description Derive buffer distances using the \code{raster::distance} function, so that these can be used as predictors for spatial prediction i.e. to account for spatial proximity to low, medium and high values.
 #'
@@ -15,6 +16,11 @@
 #' @export
 #'
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#'
+#' @references
+#' \itemize{
+#'   \item Hengl, T., Nussbaum, M., Wright, M. N., Heuvelink, G. B., and Gräler, B. (2018) \href{https://doi.org/10.7717/peerj.5518}{Random Forest as a generic framework for predictive modeling of spatial and spatio-temporal variables}. PeerJ 6:e5518.
+#' }
 #'
 #' @examples
 #' \donttest{

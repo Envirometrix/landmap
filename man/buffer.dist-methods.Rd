@@ -42,6 +42,11 @@ b <- buffer.dist(meuse["zinc"], meuse.grid[1],
         classes=as.factor(1:nrow(meuse)), parallel=FALSE)
 }
 }
+\references{
+\itemize{
+  \item Hengl, T., Nussbaum, M., Wright, M. N., Heuvelink, G. B., and Gräler, B. (2018) \href{https://doi.org/10.7717/peerj.5518}{Random Forest as a generic framework for predictive modeling of spatial and spatio-temporal variables}. PeerJ 6:e5518.
+}
+}
 \author{
 \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
 }
