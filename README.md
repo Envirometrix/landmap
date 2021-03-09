@@ -53,7 +53,7 @@ First, we need to install number of packages as Ensemble Machine Learning uses
 several independent learners:
 
 ```r
-ls <- c("rgdal", "raster", "plotKML", "geoR", "ranger", "mlr", 
+ls <- c("rgdal", "raster", "plotKML", "geoR", "ranger", "mlr", "forestError", 
         "xgboost", "glmnet", "matrixStats", "kernlab", "deepnet")
 new.packages <- ls[!(ls %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
@@ -168,24 +168,29 @@ _Figure: Predicted zinc content for the Meuse data set. Model error is derived u
 <img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML_2.png" width="650">\
 _Figure: Repeated predictions for zinc content using the same settings._
 
-As a default setting, we use the quantreg (Quantile Regression) random forest implementation of the ranger package 
-to derive the prediction intervals i.e. the estimated uncertainty around a single predicted value. 
-It can be derived as:
+As a default setting, we use the method of [Lu & Hardin (2021)]() implemented in the 
+forestError package to derive the prediction intervals i.e. the estimated 
+uncertainty around a single predicted value. It can be derived as:
 
 - upper and lower quantiles, and/or
 - standard deviation (assumes symmetric distribution of errors),
 
-As a default value for quantreg, landmap uses `quantiles = c((1-.682)/2, 1-(1-.682)/2)` so that s.d. can also 
+As a default value for prediction intervals, landmap uses `quantiles = c((1-.682)/2, 1-(1-.682)/2)` so that s.d. can also 
 be derived from the upper and lower 68% quantile using:
 
 ```r
 pred.error <- (q.upr-q.lwr)/2
 ```
 
+<img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/map-zinc-interval-1.png" width="650">\
+_Figure: Lower and upper prediction intervals based on the 68% probability._
+
+
 Animated predictions by 9 models (3x independently fitted random forest, SVM and Xgboost) shows the following patterns:
 
 <img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/meuse_lead_ensemble.gif" width="400" />
 _Figure: Examples of independently generated predictions for lead concentration. The coefficients are beta coefficients from the meta-learner fit: the higher the coefficient, more important the model for the ensemble merge._
+
 
 The predictions shown in the image above incorporate spatial correlation between values, 
 and hence can be used as a possible replacement for kriging methods ([Hengl et al. 2018](https://doi.org/10.7717/peerj.5518)). Automation comes, however, at the high computing and RAM usage costs.

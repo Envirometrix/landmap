@@ -497,9 +497,10 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
             message("Deriving model errors using forestError package...", immediate. = TRUE)
             m.train = object@spModel$learner.model$super.model$learner.model$model
             m.terms = all.vars(object@spModel$learner.model$super.model$learner.model$terms)
+            ## http://jmlr.org/papers/v22/18-558.html
             pred.q = forestError::quantForestError(object@quantregModel, X.train=m.train[,m.terms[-1]], X.test=as.data.frame(out.c), Y.train=m.train[,m.terms[1]], alpha = (1-(quantiles[2]-quantiles[1])), n.cores = n.cores)
             pred$model.error <- sqrt(pred.q$estimates$mspe)
-            pred$model.bias <- sqrt(pred.q$estimates$bias)
+            pred$model.bias <- pred.q$estimates$bias
             pred@data[,"q.lwr"] <- pred.q$estimates[,grep("lower", names(pred.q$estimates))]
             pred@data[,"q.upr"] <- pred.q$estimates[,grep("upper", names(pred.q$estimates))]
           } else {

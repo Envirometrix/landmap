@@ -94,7 +94,7 @@ setMethod("tune.spLearner", signature(object = "spLearner"), function(object, nu
     }
     ## feature selection
     lrn1 <- mlr::makeFeatSelWrapper(lrn.rf, resampling = inner, control = ctrlF, show.info=TRUE)
-    try( var.mod1 <- mlr::train(lrn1, task = tsk0), silent = TRUE)
+    var.mod1 <- mlr::train(lrn1, task = tsk0)
     if(!class(.Last.value)[1]=="try-error"){
       var.sfeats1 <- mlr::getFeatSelResult(var.mod1)
     } else {
