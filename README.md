@@ -168,8 +168,8 @@ _Figure: Predicted zinc content for the Meuse data set. Model error is derived u
 <img src="https://github.com/thengl/GeoMLA/blob/master/RF_vs_kriging/results/meuse/Fig_meuse_EML_2.png" width="650">\
 _Figure: Repeated predictions for zinc content using the same settings._
 
-As a default setting, we use the method of [Lu & Hardin (2021)]() implemented in the 
-forestError package to derive the prediction intervals i.e. the estimated 
+As a default setting, we use the method of [Lu & Hardin (2021)](http://jmlr.org/papers/v22/18-558.html) implemented in the 
+[forestError](https://cran.r-project.org/package=forestError) package to derive the prediction intervals i.e. the estimated 
 uncertainty around a single predicted value. It can be derived as:
 
 - upper and lower quantiles, and/or
