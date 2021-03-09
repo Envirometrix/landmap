@@ -28,7 +28,7 @@ Contains a list of color palettes (data frames with class names / break points, 
 \author{Tomislav Hengl}
 \references{
 \itemize{
-\item Batjes, N. H., Ribeiro, E., van Oostrum, A., Leenaars, J., Hengl, T., & de Jesus, J. M. (2017). WoSIS: providing standardised soil profile data for the world. Earth System Science Data, 9(1), 1. https://doi.org/10.5194/essd-9-1-2017
+\item Batjes, N. H., Ribeiro, E., van Oostrum, A., Leenaars, J., Hengl, T., & de Jesus, J. M. (2017). WoSIS: providing standardised soil profile data for the world. Earth System Science Data, 9(1), 1. \doi{10.5194/essd-9-1-2017}
 }
 }
 \examples{

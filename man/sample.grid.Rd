@@ -45,7 +45,7 @@ round(length(prof1$subset)/length(profs)*100, 1)
 }
 \references{
 \itemize{
-  \item Shangguan, W., Hengl, T., de Jesus, J. M., Yuan, H., & Dai, Y. (2017). \href{https://doi.org/10.1002/2016MS000686}{Mapping the global depth to bedrock for land surface modeling}. Journal of Advances in Modeling Earth Systems, 9(1), 65-88.
+  \item Shangguan, W., Hengl, T., de Jesus, J. M., Yuan, H., & Dai, Y. (2017). Mapping the global depth to bedrock for land surface modeling. Journal of Advances in Modeling Earth Systems, 9(1), 65-88. \doi{10.1002/2016MS000686}
 }
 }
 \author{

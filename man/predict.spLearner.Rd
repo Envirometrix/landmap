@@ -8,10 +8,11 @@
   object,
   predictionLocations,
   model.error = TRUE,
-  error.type = c("quantreg", "weighted.sd", "interval")[1],
+  error.type = c("forestError", "quantreg", "weighted.sd", "interval")[1],
   t.prob = 1/3,
   w,
   quantiles = c((1 - 0.682)/2, 1 - (1 - 0.682)/2),
+  n.cores = parallel::detectCores(),
   ...
 )
 }
@@ -28,7 +29,9 @@
 
 \item{w}{optional weights vector.}
 
-\item{quantiles}{list of quantiles for quantreg forest (maximum lower and upper quantile).}
+\item{quantiles}{Lower and upper quantiles for quantreg forest (0.159 and 0.841 for 1 standard deviation).}
+
+\item{n.cores}{Number of cores to use (for parallel computation in ranger).}
 
 \item{...}{optional parameters.}
 }

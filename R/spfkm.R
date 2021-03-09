@@ -3,7 +3,7 @@
 #' @aliases spfkm
 #' @rdname spfkm
 #'
-#' @description Runs supervised fuzzy \emph{k}-means (\href{http://dx.doi.org/10.1080/13658810310001620924}{Hengl et al., 2004}) using a list of covariates layers provided as \code{"SpatialPixelsDataFrame-class"} object. If class centres and variances are not provided, it first fits a multinomial logistic regression model (\code{spmultinom}), then predicts the class centres and variances based on the output from the \code{nnet::multinom}.
+#' @description Runs supervised fuzzy \emph{k}-means (Hengl et al., 2004; \doi{10.1080/13658810310001620924}) using a list of covariates layers provided as \code{"SpatialPixelsDataFrame-class"} object. If class centres and variances are not provided, it first fits a multinomial logistic regression model (\code{spmultinom}), then predicts the class centers and variances based on the output from the \code{nnet::multinom}.
 #'
 #' @param formulaString formula.
 #' @param observations SpatialPointsDataFrame.

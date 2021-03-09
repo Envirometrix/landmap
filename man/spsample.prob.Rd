@@ -25,7 +25,7 @@ Returns a list of objects where \code{'iprob'} (\code{"SpatialPixelsDataFrame"})
 Estimates occurrence probabilities as an average between the kernel density estimation (spreading of points in geographical space) and MaxLike analysis (spreading of points in feature space). The output \code{'iprob'} indicates whether the sampling plan has systematically missed some important locations / features, and can be used as an input for modelling (e.g. as weights for regression modeling).
 }
 \note{
-Occurrence probabilities for geographical space are derived using kernel density estimator. The sampling intensities are converted to probabilities by deviding the sampling intensity by the maximum sampling intensity for the study area (\href{http://spatstat.org/}{Baddeley, 2008}). The occurrence probabilities for feature space are determined using MaxLike algorithm (\href{http://dx.doi.org/10.1111/j.2041-210X.2011.00182.x}{Royle et al., 2012}). The lower the average occurrence probability for the whole study area, the lower the representation efficiency of a sampling plan. \cr MaxLike function might fail to produce predictions (e.g. if not at least one continuous covariate is provided and if the \code{optim} function is not able to find the global optima) in which case an error message is generated. Running Principal Component analysis i.e. standardizing the covariates prior to running \code{spsample.prob} is, thus, highly recommended.\cr This function can be time consuming for large grids.
+Occurrence probabilities for geographical space are derived using kernel density estimator. The sampling intensities are converted to probabilities by deviding the sampling intensity by the maximum sampling intensity for the study area (\href{http://spatstat.org/}{Baddeley, 2008}). The occurrence probabilities for feature space are determined using MaxLike algorithm (Royle et al., 2012; \doi{10.1111/j.2041-210X.2011.00182.x}). The lower the average occurrence probability for the whole study area, the lower the representation efficiency of a sampling plan. \cr MaxLike function might fail to produce predictions (e.g. if not at least one continuous covariate is provided and if the \code{optim} function is not able to find the global optima) in which case an error message is generated. Running Principal Component analysis i.e. standardizing the covariates prior to running \code{spsample.prob} is, thus, highly recommended.\cr This function can be time consuming for large grids.
 }
 \examples{
 \donttest{
@@ -89,7 +89,7 @@ summary(m0)$adj.r.squared
 \references{
 \itemize{
   \item Baddeley, A. (2008) \href{http://spatstat.org/}{Analysing spatial point patterns in R}. Technical report, CSIRO Australia. Version 4.
-  \item Royle, J.A., Chandler, R.B., Yackulic, C. and J. D. Nichols. (2012) \href{http://dx.doi.org/10.1111/j.2041-210X.2011.00182.x}{Likelihood analysis of species occurrence probability from presence-only data for modelling species distributions}. Methods in Ecology and Evolution.
+  \item Royle, J.A., Chandler, R.B., Yackulic, C. and J. D. Nichols. (2012) Likelihood analysis of species occurrence probability from presence-only data for modelling species distributions. Methods in Ecology and Evolution. \doi{10.1111/j.2041-210X.2011.00182.x}
 }
 }
 \author{
