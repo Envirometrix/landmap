@@ -24,6 +24,7 @@ Imports:
     parallelMap,
     sp,
     rgdal,
+    meteo,
     gdalUtils,
     raster
 Suggests: geoR, ParamHelpers, mda, psych, spdep, fossil, xgboost, plyr, kernlab, nnet, rjson, spatstat, maptools, maxlike, RCurl, aqp, deepnet, RSAGA, soiltexture, snowfall, plotKML, boot

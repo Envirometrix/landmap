@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/Envirometrix/landmap.svg?branch=master)](https://travis-ci.org/Envirometrix/landmap)
 [![R-CMD-check](https://github.com/Envirometrix/landmap/workflows/R-CMD-check/badge.svg)](https://github.com/Envirometrix/landmap/actions)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/landmap)](https://cran.r-project.org/package=landmap)
-[![Github_Status_Badge](https://img.shields.io/badge/Github-0.0--3-blue.svg)](https://github.com/Envirometrix/landmap)
+[![Github_Status_Badge](https://img.shields.io/badge/Github-0.0--8-blue.svg)](https://github.com/Envirometrix/landmap)
 
 Package provides methodology for automated mapping i.e. spatial interpolation and/or 
 prediction using **Ensemble Machine Learning** (extends functionality of the [mlr package](https://mlr.mlr-org.com/)). Key functionality includes:
@@ -27,7 +27,7 @@ is explained in detail in:
 - Hengl, T., Nussbaum, M., Wright, M. N., Heuvelink, G. B., and Gräler, B. (2018). 
    [Random Forest as a generic framework for predictive modeling of spatial and spatio-temporal variables](https://doi.org/10.7717/peerj.5518). PeerJ 6:e5518.
 
-Use of geographical distances as features in machine learning is also explained in detail in:
+Use of geographical distances and nearest neighbors as features in machine learning is also explained in detail in:
 
 - Møller, A. B., Beucher, A. M., Pouladi, N., and Greve, M. H. (2020). [Oblique geographic coordinates as covariates for digital soil mapping](https://doi.org/10.5194/soil-6-269-2020). SOIL, 6, 269–289, https://doi.org/10.5194/soil-6-269-2020
 - Sekulić, A., Kilibarda, M., Heuvelink, G.B., Nikolić, M., Bajat, B. (2020). [Random Forest Spatial Interpolation](https://doi.org/10.3390/rs12101687). Remote Sens. 12, 1687. https://doi.org/10.3390/rs12101687
@@ -176,7 +176,7 @@ uncertainty around a single predicted value. It can be derived as:
 - standard deviation (assumes symmetric distribution of errors),
 
 As a default value for prediction intervals, landmap uses `quantiles = c((1-.682)/2, 1-(1-.682)/2)` so that s.d. can also 
-be derived from the upper and lower 68% quantile using:
+be derived from the upper and lower 68% quantiles by using:
 
 ```r
 pred.error <- (q.upr-q.lwr)/2

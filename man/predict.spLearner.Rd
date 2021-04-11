@@ -13,6 +13,7 @@
   w,
   quantiles = c((1 - 0.682)/2, 1 - (1 - 0.682)/2),
   n.cores = parallel::detectCores(),
+  what = c("mspe", "bias", "interval"),
   ...
 )
 }
@@ -32,6 +33,8 @@
 \item{quantiles}{Lower and upper quantiles for quantreg forest (0.159 and 0.841 for 1 standard deviation).}
 
 \item{n.cores}{Number of cores to use (for parallel computation in ranger).}
+
+\item{what}{A vector of characters indicating what estimates are desired for the quantForestError.}
 
 \item{...}{optional parameters.}
 }

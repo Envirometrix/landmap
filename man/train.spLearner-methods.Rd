@@ -21,12 +21,14 @@
   cov.model = "exponential",
   subsample = 10000,
   parallel = "multicore",
-  buffer.dist = FALSE,
   oblique.coords = TRUE,
+  nearest = FALSE,
+  buffer.dist = FALSE,
   theta.list = seq(0, 180, length.out = 14) * pi/180,
   spc = TRUE,
   id = NULL,
   weights = NULL,
+  n.obs = 10,
   ...
 )
 }
@@ -57,9 +59,11 @@
 
 \item{parallel}{logical, Initiate parallel processing,}
 
-\item{buffer.dist}{Specify whether to use buffer distances to points as covariates,}
-
 \item{oblique.coords}{Specify whether to use oblique coordinates as covariates,}
+
+\item{nearest}{Specify whether to use nearest values and distances i.e. the method of Sekulic et al. (2020),}
+
+\item{buffer.dist}{Specify whether to use buffer distances to points as covariates,}
 
 \item{theta.list}{List of angles (in radians) used to derive oblique coordinates,}
 
@@ -68,6 +72,8 @@
 \item{id}{Id column name to control clusters of data,}
 
 \item{weights}{Optional weights (per row) that learners will use to account for variable data quality,}
+
+\item{n.obs}{Number of nearest observations to be found in \code{meteo::near.obs} (by default 10),}
 
 \item{...}{other arguments that can be passed on to \code{mlr::makeStackedLearner},}
 }
@@ -80,13 +86,15 @@ Automated spatial predictions and/or interpolation using Ensemble Machine Learni
 }
 \note{
 By default uses oblique coordinates (rotated coordinates) as described in Moller et al. (2020; \doi{10.5194/soil-6-269-2020}) to account for geographical distribution of values.
+By setting the \code{nearest = TRUE}, distances to nearest observations and values of nearest neighbors will be used (see: Sekulic et al, 2020; \doi{10.3390/rs12101687}). This method closely resembles geostatistical interpolators such as kriging.
 Buffer geographical distances can be added by setting \code{buffer.dist=TRUE}.
 Using either oblique coordinates and/or buffer distances is not recommended for point data set with distinct spatial clustering.
-Effects of adding geographical distances into modeling are explained in detail in Hengl et al. (2018; \doi{10.7717/peerj.5518}).
+Effects of adding geographical distances into modeling are explained in detail in Hengl et al. (2018; \doi{10.7717/peerj.5518}) and Sekulic et al. (2020; \doi{10.3390/rs12101687}).
 Default learners used for regression are: \code{c("regr.ranger", "regr.ksvm", "regr.nnet", "regr.cvglmnet")}.
 Default learners used for classification / binomial variables are: \code{c("classif.ranger", "classif.svm", "classif.multinom")}, with \code{predict.type="prob"}.
 When using \code{method = "stack.cv"} each training and prediction round could produce somewhat different results due to randomization of CV.
-Prediction errors are derived by default using quantreg (Quantile Regression) option in the ranger package (\href{https://jmlr.org/papers/v7/meinshausen06a.html}{Meinshausen, 2006}).
+Prediction errors are derived by default using the \code{forestError} package method described in Lu & Hardin (2021).
+Optionally, the quantreg (Quantile Regression) option from the ranger package (\href{https://jmlr.org/papers/v7/meinshausen06a.html}{Meinshausen, 2006}) can also be used.
 }
 \examples{
 library(mlr)
@@ -138,6 +146,22 @@ spplot(meuse.y$pred[,c("q.lwr","q.upr")], col.regions=R_pal[["rainbow_75"]][4:20
    main="Prediction intervals (alpha = 0.318)")
 dev.off()
 
+## Method from https://doi.org/10.3390/rs12101687
+library(meteo)
+mN <- train.spLearner(meuse["zinc"], covariates=meuse.grid[,c("dist","ffreq")],
+        parallel=FALSE, lambda = 0, nearest=TRUE)
+meuse.N <- predict(mN)
+## Plot of predictions and prediction error (RMSPE)
+op <- par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
+plot(raster(meuse.N$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
+   main="Predictions spLearner meteo::near.obs", axes=FALSE, box=FALSE)
+points(meuse, pch="+")
+plot(raster(meuse.N$pred["model.error"]), col=rev(bpy.colors()),
+   main="Prediction errors", axes=FALSE, box=FALSE)
+points(meuse, pch="+")
+par(op)
+dev.off()
+
 ## Classification:
 SL.library <- c("classif.ranger", "classif.xgboost", "classif.nnTrain")
 mC <- train.spLearner(meuse["soil"], covariates=meuse.grid[,c("dist","ffreq")],
@@ -151,9 +175,10 @@ spplot(meuse.soil$pred[grep("error.", names(meuse.soil$pred))],
 ## SIC1997
 data("sic1997")
 X <- sic1997$swiss1km[c("CHELSA_rainfall","DEM")]
-mR <- train.spLearner(sic1997$daily.rainfall, covariates=X, lambda=1, parallel=FALSE)
+mR <- train.spLearner(sic1997$daily.rainfall, covariates=X, lambda=1,
+         nearest = TRUE, parallel=FALSE)
 summary(mR@spModel$learner.model$super.model$learner.model)
-rainfall1km <- predict(mR)
+rainfall1km <- predict(mR, what="mspe")
 op <- par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
 plot(raster(rainfall1km$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
     main="Predictions spLearner", axes=FALSE, box=FALSE)
@@ -162,6 +187,7 @@ plot(raster(rainfall1km$pred["model.error"]), col=rev(bpy.colors()),
     main="Prediction errors", axes=FALSE, box=FALSE)
 points(sic1997$daily.rainfall, pch="+")
 par(op)
+dev.off()
 
 ## Ebergotzen data set
 data(eberg_grid)
@@ -201,7 +227,9 @@ dev.off()
 \itemize{
   \item Moller, A. B., Beucher, A. M., Pouladi, N., and Greve, M. H. (2020). Oblique geographic coordinates as covariates for digital soil mapping. SOIL, 6, 269–289. \doi{10.5194/soil-6-269-2020}
   \item Hengl, T., Nussbaum, M., Wright, M. N., Heuvelink, G. B., and Graler, B. (2018) Random Forest as a generic framework for predictive modeling of spatial and spatio-temporal variables. PeerJ 6:e5518. \doi{10.7717/peerj.5518}
+  \item Lu, B., & Hardin, J. (2021). A unified framework for random forest prediction error estimation. Journal of Machine Learning Research, 22(8), 1–41. \url{https://jmlr.org/papers/v22/18-558.html}
   \item Meinshausen, N. (2006). \href{https://jmlr.org/papers/v7/meinshausen06a.html}{Quantile regression forests}. Journal of Machine Learning Research, 7(Jun), 983–999. \url{https://jmlr.org/papers/v7/meinshausen06a.html}
+  \item Sekulic, A., Kilibarda, M., Heuvelink, G. B., Nikolic, M. & Bajat, B. (2020). Random Forest Spatial Interpolation. Remote. Sens. 12, 1687, \doi{10.3390/rs12101687}
 }
 }
 \author{
