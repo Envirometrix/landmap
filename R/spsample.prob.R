@@ -91,10 +91,10 @@ setMethod("spsample.prob", signature(observations = "SpatialPoints", covariates 
   observations <- observations[stats::complete.cases(ov),]
 
   if(requireNamespace("spatstat", quietly = TRUE)&requireNamespace("maxlike", quietly = TRUE)){
-    mg_owin <- spatstat::as.owin(data.frame(x = covariates@coords[,1], y = covariates@coords[,2], window = TRUE))
+    mg_owin <- spatstat.geom::as.owin(data.frame(x = covariates@coords[,1], y = covariates@coords[,2], window = TRUE))
     xy = sp::coordinates(observations)
-    suppressWarnings( locs.ppp <- spatstat::ppp(x=xy[,1], y=xy[,2], window=mg_owin) )
-    dist.locs <- spatstat::nndist(locs.ppp)
+    suppressWarnings( locs.ppp <- spatstat.geom::ppp(x=xy[,1], y=xy[,2], window=mg_owin) )
+    dist.locs <- spatstat.geom::nndist(locs.ppp)
     ## inlcusion probabilities geographical space:
     if(missing(n.sigma)){
       n.sigma <- stats::quantile(dist.locs, quant.nndist)
@@ -103,7 +103,7 @@ setMethod("spsample.prob", signature(observations = "SpatialPoints", covariates 
         warning(paste0("'Sigma' set at ", signif(n.sigma, 3), ". Consider increasing the value."))
     }
     message(paste("Deriving kernel density map using sigma", signif(n.sigma, 3), "..."))
-    dmap <- maptools::as.SpatialGridDataFrame.im(spatstat::density.ppp(locs.ppp, sigm=n.sigma, ...))
+    dmap <- maptools::as.SpatialGridDataFrame.im(spatstat.core::density.ppp(locs.ppp, sigm=n.sigma, ...))
     ## Pixel values are estimated intensity values, expressed in 'points per unit area' (hence multiply by area).
     dmap.max <- max(dmap@data[,1], na.rm=TRUE)
     dmap@data[,1] <- signif(dmap@data[,1]/dmap.max, 3)

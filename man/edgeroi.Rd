@@ -84,20 +84,23 @@ pnts <- list("sp.points", sites, pch="+", col="black")
 library(RCurl)
 rep = "https://raw.github.com/Envirometrix/PredictiveSoilMapping/master/extdata/"
 x = tempfile(fileext = ".rda")
-con <- download.file(paste0(rep, "edgeroi.grids.rda"), x, method="wget")
-load(x)
-str(edgeroi.grids)
-gridded(edgeroi.grids) <- ~x+y
-proj4string(edgeroi.grids) <- CRS("+init=epsg:28355")
-spplot(edgeroi.grids[1], sp.layout=pnts)
-## load the 100 m grids:
-x2 = tempfile(fileext = ".rda")
-con2 <- download.file(paste0(rep, "edgeroi.grids100.rda"), x2, method="wget")
-load(x2)
-str(edgeroi.grids100)
-gridded(edgeroi.grids100) <- ~x+y
-proj4string(edgeroi.grids100) <- CRS("+init=epsg:28355")
-spplot(edgeroi.grids100["TI1LAN6"], sp.layout=pnts)
+wget.check = Sys.which("wget")
+if(!wget.check==""){
+  con <- download.file(paste0(rep, "edgeroi.grids.rda"), x, method="wget")
+  load(x)
+  str(edgeroi.grids)
+  gridded(edgeroi.grids) <- ~x+y
+  proj4string(edgeroi.grids) <- CRS("+init=epsg:28355")
+  spplot(edgeroi.grids[1], sp.layout=pnts)
+  ## load the 100 m grids:
+  x2 = tempfile(fileext = ".rda")
+  con2 <- download.file(paste0(rep, "edgeroi.grids100.rda"), x2, method="wget")
+  load(x2)
+  str(edgeroi.grids100)
+  gridded(edgeroi.grids100) <- ~x+y
+  proj4string(edgeroi.grids100) <- CRS("+init=epsg:28355")
+  spplot(edgeroi.grids100["TI1LAN6"], sp.layout=pnts)
+}
 }
 }
 \keyword{datasets}
