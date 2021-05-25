@@ -1,6 +1,6 @@
 Package: landmap
 Title: Automated Spatial Prediction using Ensemble Machine Learning
-Version: 0.0.9
+Version: 0.0.11
 Authors@R: person("Tomislav", "Hengl", email = "tom.hengl@opengeohub.org", role = c("aut", "cre"))
 Description: Functions and tools for spatial interpolation and/or prediction of environmental variables (points to grids) 
    based on using Ensemble Machine Learning with geographical distances. Package also provides access to Global 
@@ -24,10 +24,9 @@ Imports:
     parallelMap,
     sp,
     rgdal,
-    meteo,
     gdalUtils,
     raster
-Suggests: geoR, ParamHelpers, mda, psych, spdep, fossil, xgboost, plyr, kernlab, nnet, rjson, spatstat, spatstat.core, maptools, maxlike, RCurl, aqp, deepnet, RSAGA, soiltexture, snowfall, plotKML, boot
+Suggests: nabor, meteo, geoR, ParamHelpers, mda, psych, spdep, fossil, xgboost, plyr, kernlab, nnet, rjson, spatstat, spatstat.core, maptools, maxlike, RCurl, aqp, deepnet, RSAGA, soiltexture, snowfall, plotKML, boot
 RoxygenNote: 7.1.1
 SystemRequirements: C++11, GDAL (>= 2.0.1), GEOS (>= 3.4.0),
     PROJ (>= 4.8.0)

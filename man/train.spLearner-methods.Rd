@@ -109,9 +109,9 @@ library(raster)
 library(forestError)
 demo(meuse, echo=FALSE)
 ## Regression:
-sl = c("regr.ranger", "regr.nnet", "regr.glm")
-m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")],
-      lambda=0, parallel=FALSE, SL.library=sl)
+sl = c("regr.rpart", "regr.nnet", "regr.glm")
+system.time( m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")],
+      lambda=0, parallel=FALSE, SL.library=sl) )
 summary(m@spModel$learner.model$super.model$learner.model)
 \donttest{
 ## regression-matrix:
@@ -147,9 +147,9 @@ spplot(meuse.y$pred[,c("q.lwr","q.upr")], col.regions=R_pal[["rainbow_75"]][4:20
 dev.off()
 
 ## Method from https://doi.org/10.3390/rs12101687
-library(meteo)
+#library(meteo)
 mN <- train.spLearner(meuse["zinc"], covariates=meuse.grid[,c("dist","ffreq")],
-        parallel=FALSE, lambda = 0, nearest=TRUE)
+        parallel=FALSE, lambda=0, nearest=TRUE)
 meuse.N <- predict(mN)
 ## Plot of predictions and prediction error (RMSPE)
 op <- par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))

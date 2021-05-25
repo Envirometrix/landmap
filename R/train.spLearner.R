@@ -210,9 +210,9 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' library(forestError)
 #' demo(meuse, echo=FALSE)
 #' ## Regression:
-#' sl = c("regr.ranger", "regr.nnet", "regr.glm")
-#' m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")],
-#'       lambda=0, parallel=FALSE, SL.library=sl)
+#' sl = c("regr.rpart", "regr.nnet", "regr.glm")
+#' system.time( m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")],
+#'       lambda=0, parallel=FALSE, SL.library=sl) )
 #' summary(m@spModel$learner.model$super.model$learner.model)
 #' \donttest{
 #' ## regression-matrix:
@@ -248,9 +248,9 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' dev.off()
 #'
 #' ## Method from https://doi.org/10.3390/rs12101687
-#' library(meteo)
+#' #library(meteo)
 #' mN <- train.spLearner(meuse["zinc"], covariates=meuse.grid[,c("dist","ffreq")],
-#'         parallel=FALSE, lambda = 0, nearest=TRUE)
+#'         parallel=FALSE, lambda=0, nearest=TRUE)
 #' meuse.N <- predict(mN)
 #' ## Plot of predictions and prediction error (RMSPE)
 #' op <- par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
@@ -349,8 +349,8 @@ setMethod("train.spLearner", signature(observations = "SpatialPointsDataFrame", 
     }
     if(nearest==TRUE){
       message("Deriving nearest observations using meteo::near.obs...", immediate. = TRUE)
-      nearest_obs <- meteo::near.obs(locations = covariates, observations = observations[tv], zcol = tv, n.obs = n.obs, rm.dupl = TRUE)
-      nearest_obs.dev <- meteo::near.obs(locations = observations[tv], observations = observations[tv], zcol = tv, n.obs = n.obs, rm.dupl = TRUE)
+      nearest_obs <- .near.obs(locations = covariates, observations = observations[tv], zcol = tv, n.obs = n.obs, rm.dupl = TRUE)
+      nearest_obs.dev <- .near.obs(locations = observations[tv], observations = observations[tv], zcol = tv, n.obs = n.obs, rm.dupl = TRUE)
       covariates <- sp::cbind.Spatial(covariates, sp::SpatialPixelsDataFrame(covariates@coords, nearest_obs, proj4string = sp::CRS(sp::proj4string(covariates))))
       oblique.coords <- FALSE; buffer.dist <- FALSE
     }
@@ -589,3 +589,68 @@ model.data <- function(observations, formulaString, covariates, dimensions=c("2D
 
 setMethod("print", signature(x = "spLearner"), print.spLearner)
 setMethod("predict", signature(object = "spLearner"), predict.spLearner)
+
+## https://rdrr.io/rforge/meteo/src/R/near.obs.R
+.near.obs <- function(
+  locations,
+  locations.x.y = c(1,2),
+  observations,
+  observations.x.y = c(1,2),
+  zcol = 3,
+  n.obs = 10,
+  rm.dupl = TRUE
+)
+{
+  if (class(locations) == "SpatialPoints" ||
+      class(locations) == "SpatialPointsDataFrame" ||
+      class(locations) == "SpatialPixelsDataFrame") {
+    locations <- sp::coordinates(locations)
+  } else {
+    locations <- locations[, locations.x.y]
+  }
+  if (class(observations) == "SpatialPoints" || class(observations) == "SpatialPointsDataFrame") {
+    variable <- observations[[zcol]]
+    observations <- sp::coordinates(observations)
+  } else {
+    variable <- observations[, zcol]
+    observations <- observations[, observations.x.y]
+  }
+
+  if (nrow(observations) < (n.obs+1)) {
+    # return NA
+    nl_df <- matrix(NA, nrow = nrow(locations), ncol = (2*n.obs))
+  } else {
+    # if (identical(locations, observations)){
+    if (rm.dupl){
+      knn1 <- nabor::knn(observations, locations, k=n.obs+1)
+      knn1$nn.idx[round(knn1$nn.dists[, 1]) == 0, 1:n.obs] <- knn1$nn.idx[round(knn1$nn.dists[, 1]) == 0, -1]
+      knn1$nn.idx <- knn1$nn.idx[, -(n.obs+1)]
+      knn1$nn.dists[round(knn1$nn.dists[, 1]) == 0, 1:n.obs] <- knn1$nn.dists[round(knn1$nn.dists[, 1]) == 0, -1]
+      knn1$nn.dists <- knn1$nn.dists[, -(n.obs+1)]
+    } else {
+      knn1 <- nabor::knn(observations, locations, k=n.obs)
+    }
+
+    if(!all(class(knn1$nn.idx)=='integer')) {
+      near_o1 <- apply(knn1$nn.idx, 2, function(x) {variable[x]})
+      near_o1 <- cbind(near_o1)
+      nl_df <- cbind(knn1$nn.dists, near_o1)
+    } else {
+      near_o1 <- variable[knn1$nn.idx]
+      nl_df <- t(c(knn1$nn.dists, near_o1))
+    }
+  }
+
+  name1 <- c()
+  name2 <- c()
+  for (i in 1:n.obs) {
+    name1 <- c(name1, paste("dist", i, sep = ""))
+    name2 <- c(name2, paste("obs", i, sep = ""))
+  }
+  all_names <- c(name1, name2)
+  nl_df <- as.data.frame(nl_df)
+  names(nl_df) <- all_names
+
+  return(nl_df)
+
+}
