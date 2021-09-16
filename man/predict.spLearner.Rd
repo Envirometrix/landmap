@@ -8,7 +8,7 @@
   object,
   predictionLocations,
   model.error = TRUE,
-  error.type = c("forestError", "quantreg", "weighted.sd", "interval")[1],
+  error.type = c("forestError", "weighted.sd", "quantreg", "interval")[1],
   t.prob = 1/3,
   w,
   quantiles = c((1 - 0.682)/2, 1 - (1 - 0.682)/2),

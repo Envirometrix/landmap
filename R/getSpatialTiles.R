@@ -25,9 +25,8 @@
 #' ## all at once:
 #' pix.lst <- tile(meuse.grid, block.x=1000)
 #' \donttest{
-#'   library(plotKML)
-#'   ## raster files via rgdal:
 #'   library(rgdal)
+#'   ## raster files via rgdal:
 #'   fn = system.file("pictures/SP27GTIF.TIF",
 #'                    package = "rgdal")
 #'   obj <- GDALinfo(fn)

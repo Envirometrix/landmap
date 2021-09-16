@@ -116,8 +116,8 @@ summary(m@spModel$learner.model$super.model$learner.model)
 \donttest{
 ## regression-matrix:
 str(m@vgmModel$observations@data)
-meuse.y <- predict(m)
-plot(raster(meuse.y$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
+meuse.y <- predict(m, error.type="weighted.sd")
+plot(raster::raster(meuse.y$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
    main="Predictions spLearner", axes=FALSE, box=FALSE)
 
 library(parallelMap)
@@ -134,7 +134,7 @@ op <- par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
 plot(raster(meuse.y$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
    main="Predictions spLearner", axes=FALSE, box=FALSE)
 points(meuse, pch="+")
-plot(raster(meuse.y$pred["model.error"]), col=rev(bpy.colors()),
+plot(raster::raster(meuse.y$pred["model.error"]), col=rev(bpy.colors()),
    main="Prediction errors", axes=FALSE, box=FALSE)
 points(meuse, pch="+")
 par(op)
@@ -153,10 +153,10 @@ mN <- train.spLearner(meuse["zinc"], covariates=meuse.grid[,c("dist","ffreq")],
 meuse.N <- predict(mN)
 ## Plot of predictions and prediction error (RMSPE)
 op <- par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
-plot(raster(meuse.N$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
+plot(raster::raster(meuse.N$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
    main="Predictions spLearner meteo::near.obs", axes=FALSE, box=FALSE)
 points(meuse, pch="+")
-plot(raster(meuse.N$pred["model.error"]), col=rev(bpy.colors()),
+plot(raster::raster(meuse.N$pred["model.error"]), col=rev(bpy.colors()),
    main="Prediction errors", axes=FALSE, box=FALSE)
 points(meuse, pch="+")
 par(op)
@@ -180,10 +180,10 @@ mR <- train.spLearner(sic1997$daily.rainfall, covariates=X, lambda=1,
 summary(mR@spModel$learner.model$super.model$learner.model)
 rainfall1km <- predict(mR, what="mspe")
 op <- par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
-plot(raster(rainfall1km$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
+plot(raster::raster(rainfall1km$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
     main="Predictions spLearner", axes=FALSE, box=FALSE)
 points(sic1997$daily.rainfall, pch="+")
-plot(raster(rainfall1km$pred["model.error"]), col=rev(bpy.colors()),
+plot(raster::raster(rainfall1km$pred["model.error"]), col=rev(bpy.colors()),
     main="Prediction errors", axes=FALSE, box=FALSE)
 points(sic1997$daily.rainfall, pch="+")
 par(op)
@@ -205,7 +205,7 @@ X <- eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")]
 mB <- train.spLearner(eberg["Parabraunerde"], covariates=X,
    family=binomial(), cov.model = "nugget", parallel=FALSE)
 eberg.Parabraunerde <- predict(mB)
-plot(raster(eberg.Parabraunerde$pred["prob.1"]),
+plot(raster::raster(eberg.Parabraunerde$pred["prob.1"]),
    col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
 points(eberg["Parabraunerde"], pch="+")
 

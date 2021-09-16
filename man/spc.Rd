@@ -27,8 +27,8 @@ Combines the \code{stats::prcomp} method and predicts a list principal component
 This method assumes that the input covariates are cross-correlated and hence their overlap can be reduced. The input variables are scaled by default and the missing values will be replaced with 0 values to reduce loss of data due to missing pixels.
 }
 \examples{
-library(plotKML)
 library(sp)
+library(plotKML)
 pal = rev(rainbow(65)[1:48])
 data(eberg_grid)
 gridded(eberg_grid) <- ~x+y

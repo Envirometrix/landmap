@@ -20,6 +20,7 @@
 #' @examples
 #' library(plotKML)
 #' library(sp)
+#' library(nnet)
 #'
 #' data(eberg)
 #' # subset to 20%:

@@ -87,7 +87,7 @@ setMethod("tune.spLearner", signature(object = "spLearner"), function(object, nu
     message("Running tuneParams for ranger... ", immediate. = TRUE)
     resR.lst = mlr::tuneParams(mlr::makeLearner("regr.ranger", num.threads = round(parallel::detectCores()/length(discrete_ps$pars$mtry$values)), num.trees=num.trees), task = tsk0, resampling = rdesc, par.set = discrete_ps, control = ctrl)
     ## Error: mtry can not be larger than number of variables in data.
-    if(resR.lst$x$mtry >= length(object@spModel$features)){
+    if(resR.lst$x$mtry >= (length(object@spModel$features)-1)){
       lrn.rf = mlr::makeLearner("regr.ranger", num.threads = parallel::detectCores(), num.trees=num.trees, importance="impurity")
     } else {
       lrn.rf = mlr::makeLearner("regr.ranger", num.threads = parallel::detectCores(), mtry=resR.lst$x$mtry, num.trees=num.trees, importance="impurity")

@@ -65,7 +65,6 @@ Listed gridded layers follow a standard naming convention used by WorlGrids.org 
 }
 \examples{
 library(rgdal)
-library(aqp)
 library(sp)
 
 data(edgeroi)
