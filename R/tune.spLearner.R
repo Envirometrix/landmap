@@ -50,8 +50,8 @@
 #'       lambda=0, parallel=FALSE, SL.library=sl)
 #' summary(m@spModel$learner.model$super.model$learner.model)
 #' ## Optimize model:
-#' m0 <- tune.spLearner(m, xg.skip = TRUE, parallel=FALSE)
-#' summary(m0@spModel$learner.model$super.model$learner.model)
+#' #m0 <- tune.spLearner(m, xg.skip = TRUE, parallel=FALSE)
+#' #summary(m0@spModel$learner.model$super.model$learner.model)
 #' }
 setMethod("tune.spLearner", signature(object = "spLearner"), function(object, num.trees = 85, blocking, discrete_ps, rdesc = mlr::makeResampleDesc("CV", iters = 2L), inner = mlr::makeResampleDesc("Holdout"), maxit = 20, xg.model_Params, xg.skip = FALSE, parallel = "multicore", hzn_depth = FALSE, ...){
   if(all(c("regr.ranger", "regr.xgboost") %in% object@spModel$learner.model$super.model$features) & object@spModel$learner.model$super.model$learner$id=="regr.lm"){
