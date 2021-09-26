@@ -97,16 +97,8 @@ Prediction errors are derived by default using the \code{forestError} package me
 Optionally, the quantreg (Quantile Regression) option from the ranger package (\href{https://jmlr.org/papers/v7/meinshausen06a.html}{Meinshausen, 2006}) can also be used.
 }
 \examples{
-library(mlr)
 library(rgdal)
-library(geoR)
-library(plotKML)
-library(kernlab)
-library(ranger)
-library(glmnet)
-library(boot)
-library(raster)
-library(forestError)
+library(mlr)
 demo(meuse, echo=FALSE)
 ## Regression:
 sl = c("regr.rpart", "regr.nnet", "regr.glm")
@@ -114,15 +106,13 @@ system.time( m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist"
       lambda=0, parallel=FALSE, SL.library=sl) )
 summary(m@spModel$learner.model$super.model$learner.model)
 \donttest{
+library(plotKML)
 ## regression-matrix:
 str(m@vgmModel$observations@data)
 meuse.y <- predict(m, error.type="weighted.sd")
-plot(raster::raster(meuse.y$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
+plot(raster::raster(meuse.y$pred["response"]), col=plotKML::R_pal[["rainbow_75"]][4:20],
    main="Predictions spLearner", axes=FALSE, box=FALSE)
 
-library(parallelMap)
-library(deepnet)
-library(xgboost)
 ## Regression with default settings:
 m <- train.spLearner(meuse["zinc"], covariates=meuse.grid[,c("dist","ffreq")],
         parallel=FALSE, lambda = 0)
@@ -131,20 +121,20 @@ summary(m@spModel$learner.model$super.model$learner.model)
 meuse.y <- predict(m)
 ## Plot of predictions and prediction error (RMSPE)
 op <- par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
-plot(raster(meuse.y$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
+plot(raster::raster(meuse.y$pred["response"]), col=plotKML::R_pal[["rainbow_75"]][4:20],
    main="Predictions spLearner", axes=FALSE, box=FALSE)
 points(meuse, pch="+")
 plot(raster::raster(meuse.y$pred["model.error"]), col=rev(bpy.colors()),
    main="Prediction errors", axes=FALSE, box=FALSE)
 points(meuse, pch="+")
 par(op)
-dev.off()
+while (!is.null(dev.list())) dev.off()
 ## Plot of prediction intervals:
 pts = list("sp.points", meuse, pch = "+", col="black")
-spplot(meuse.y$pred[,c("q.lwr","q.upr")], col.regions=R_pal[["rainbow_75"]][4:20],
+spplot(meuse.y$pred[,c("q.lwr","q.upr")], col.regions=plotKML::R_pal[["rainbow_75"]][4:20],
    sp.layout = list(pts),
    main="Prediction intervals (alpha = 0.318)")
-dev.off()
+while (!is.null(dev.list())) dev.off()
 
 ## Method from https://doi.org/10.3390/rs12101687
 #library(meteo)
@@ -153,14 +143,14 @@ mN <- train.spLearner(meuse["zinc"], covariates=meuse.grid[,c("dist","ffreq")],
 meuse.N <- predict(mN)
 ## Plot of predictions and prediction error (RMSPE)
 op <- par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
-plot(raster::raster(meuse.N$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
+plot(raster::raster(meuse.N$pred["response"]), col=plotKML::R_pal[["rainbow_75"]][4:20],
    main="Predictions spLearner meteo::near.obs", axes=FALSE, box=FALSE)
 points(meuse, pch="+")
 plot(raster::raster(meuse.N$pred["model.error"]), col=rev(bpy.colors()),
    main="Prediction errors", axes=FALSE, box=FALSE)
 points(meuse, pch="+")
 par(op)
-dev.off()
+while (!is.null(dev.list())) dev.off()
 
 ## Classification:
 SL.library <- c("classif.ranger", "classif.xgboost", "classif.nnTrain")
@@ -168,7 +158,7 @@ mC <- train.spLearner(meuse["soil"], covariates=meuse.grid[,c("dist","ffreq")],
    SL.library = SL.library, super.learner = "classif.glmnet", parallel=FALSE)
 meuse.soil <- predict(mC)
 spplot(meuse.soil$pred[grep("prob.", names(meuse.soil$pred))],
-        col.regions=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
+        col.regions=plotKML::SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
 spplot(meuse.soil$pred[grep("error.", names(meuse.soil$pred))],
          col.regions=rev(bpy.colors()))
 
@@ -180,14 +170,14 @@ mR <- train.spLearner(sic1997$daily.rainfall, covariates=X, lambda=1,
 summary(mR@spModel$learner.model$super.model$learner.model)
 rainfall1km <- predict(mR, what="mspe")
 op <- par(mfrow=c(1,2), oma=c(0,0,0,1), mar=c(0,0,4,3))
-plot(raster::raster(rainfall1km$pred["response"]), col=R_pal[["rainbow_75"]][4:20],
+plot(raster::raster(rainfall1km$pred["response"]), col=plotKML::R_pal[["rainbow_75"]][4:20],
     main="Predictions spLearner", axes=FALSE, box=FALSE)
 points(sic1997$daily.rainfall, pch="+")
 plot(raster::raster(rainfall1km$pred["model.error"]), col=rev(bpy.colors()),
     main="Prediction errors", axes=FALSE, box=FALSE)
 points(sic1997$daily.rainfall, pch="+")
 par(op)
-dev.off()
+while (!is.null(dev.list())) dev.off()
 
 ## Ebergotzen data set
 data(eberg_grid)
@@ -206,7 +196,7 @@ mB <- train.spLearner(eberg["Parabraunerde"], covariates=X,
    family=binomial(), cov.model = "nugget", parallel=FALSE)
 eberg.Parabraunerde <- predict(mB)
 plot(raster::raster(eberg.Parabraunerde$pred["prob.1"]),
-   col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
+   col=plotKML::SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
 points(eberg["Parabraunerde"], pch="+")
 
 ## Factor variable:
@@ -216,11 +206,11 @@ proj4string(eberg) <- CRS("+init=epsg:31467")
 X <- eberg_grid[c("PRMGEO6","DEMSRT6","TWISRT6","TIRAST6")]
 mF <- train.spLearner(eberg["TAXGRSC"], covariates=X, parallel=FALSE)
 TAXGRSC <- predict(mF)
-plot(stack(TAXGRSC$pred[grep("prob.", names(TAXGRSC$pred))]),
-    col=SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
-plot(stack(TAXGRSC$pred[grep("error.", names(TAXGRSC$pred))]),
-    col=SAGA_pal[["SG_COLORS_YELLOW_BLUE"]], zlim=c(0,0.45))
-dev.off()
+plot(raster::stack(TAXGRSC$pred[grep("prob.", names(TAXGRSC$pred))]),
+    col=plotKML::SAGA_pal[["SG_COLORS_YELLOW_RED"]], zlim=c(0,1))
+plot(raster::stack(TAXGRSC$pred[grep("error.", names(TAXGRSC$pred))]),
+    col=plotKML::SAGA_pal[["SG_COLORS_YELLOW_BLUE"]], zlim=c(0,0.45))
+while (!is.null(dev.list())) dev.off()
 }
 }
 \references{

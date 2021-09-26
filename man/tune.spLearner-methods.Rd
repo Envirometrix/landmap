@@ -71,7 +71,6 @@ library(xgboost)
 library(kernlab)
 library(ranger)
 library(glmnet)
-library(boot)
 library(raster)
 demo(meuse, echo=FALSE)
 ## Regression:
@@ -80,8 +79,8 @@ m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")],
       lambda=0, parallel=FALSE, SL.library=sl)
 summary(m@spModel$learner.model$super.model$learner.model)
 ## Optimize model:
-m0 <- tune.spLearner(m, xg.skip = TRUE, parallel=FALSE)
-summary(m0@spModel$learner.model$super.model$learner.model)
+t <- try( m0 <- tune.spLearner(m, xg.skip = TRUE, parallel=FALSE), silent=TRUE)
+if(!class(t) == "try-error") summary(m0@spModel$learner.model$super.model$learner.model)
 }
 }
 \author{

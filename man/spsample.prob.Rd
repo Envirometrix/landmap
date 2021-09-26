@@ -33,7 +33,6 @@ library(plotKML)
 library(maxlike)
 library(spatstat)
 library(maptools)
-
 data(eberg)
 data(eberg_grid)
 ## existing sampling plan:
@@ -66,7 +65,7 @@ points(iprob[["observations"]])
 plot(raster(iprob2[[1]]), zlim=c(0,1), col=SAGA_pal[[1]])
 points(iprob2[["observations"]])
 par(op)
-dev.off()
+while (!is.null(dev.list())) dev.off()
 
 ## fit a weighted lm:
 eberg.xy <- eberg[sel,c("SNDMHT_A","X","Y")]

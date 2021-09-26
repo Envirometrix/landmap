@@ -28,7 +28,6 @@
 #' Often reports \code{Singular matrix. Covariates may have different orders of magnitude.} if the covariates are perfectly aligned.
 #'
 #' @examples
-#' library(raster)
 #' library(rgdal)
 #' library(geoR)
 #' demo(meuse, echo=FALSE)

@@ -61,7 +61,6 @@ Models need to be in the form \code{zinc ~ dist} and only numeric variables are 
 Often reports \code{Singular matrix. Covariates may have different orders of magnitude.} if the covariates are perfectly aligned.
 }
 \examples{
-library(raster)
 library(rgdal)
 library(geoR)
 demo(meuse, echo=FALSE)

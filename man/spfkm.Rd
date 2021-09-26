@@ -37,7 +37,6 @@ Runs supervised fuzzy \emph{k}-means (Hengl et al., 2004; \doi{10.1080/136588103
 library(plotKML)
 library(sp)
 library(nnet)
-
 data(eberg)
 # subset to 20\%:
 eberg <- eberg[runif(nrow(eberg))<.2,]

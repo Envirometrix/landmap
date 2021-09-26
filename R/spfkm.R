@@ -21,7 +21,6 @@
 #' library(plotKML)
 #' library(sp)
 #' library(nnet)
-#'
 #' data(eberg)
 #' # subset to 20%:
 #' eberg <- eberg[runif(nrow(eberg))<.2,]

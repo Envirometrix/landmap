@@ -35,7 +35,7 @@ train.spLearner.matrix(
 
 \item{SL.library}{List of learners,}
 
-\item{family}{Family e.g. gaussian(),}
+\item{family}{Family e.g. \code{gaussian()},}
 
 \item{method}{Ensemble stacking method (see makeStackedLearner),}
 

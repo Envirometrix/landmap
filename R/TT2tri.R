@@ -17,11 +17,13 @@
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' library(soiltexture)
 #' ## convert textures by hand to sand, silt and clay:
 #' TEXMHT <- c("CL","C","SiL","SiL","missing")
 #' x <- TT2tri(TEXMHT)
 #' x
+#' }
 TT2tri <- function(TT.class, se.fit=TRUE, TT.im=NULL, soil.var="TEXMHT", levs = c("S", "LS", "SL", "SCL", "SiL", "SiCL", "CL", "L", "Si", "SC", "SiC", "C", "HC")){
   TT.class <- as.factor(TT.class)
   ## check the texture classes:

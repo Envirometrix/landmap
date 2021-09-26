@@ -31,9 +31,11 @@ Data frame with estimated sand, silt and clay values
 Soil texture class to texture fractions conversion
 }
 \examples{
+\donttest{
 library(soiltexture)
 ## convert textures by hand to sand, silt and clay:
 TEXMHT <- c("CL","C","SiL","SiL","missing")
 x <- TT2tri(TEXMHT)
 x
+}
 }
