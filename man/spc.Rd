@@ -27,6 +27,7 @@ Combines the \code{stats::prcomp} method and predicts a list principal component
 This method assumes that the input covariates are cross-correlated and hence their overlap can be reduced. The input variables are scaled by default and the missing values will be replaced with 0 values to reduce loss of data due to missing pixels.
 }
 \examples{
+if(requireNamespace("plotKML")){
 library(sp)
 library(plotKML)
 pal = rev(rainbow(65)[1:48])
@@ -36,7 +37,6 @@ proj4string(eberg_grid) <- CRS("+init=epsg:31467")
 formulaString <- ~ PRMGEO6+DEMSRT6+TWISRT6+TIRAST6
 eberg_spc <- spc(eberg_grid, formulaString)
 names(eberg_spc@predicted) # 11 components on the end;
-\donttest{
 ## plot maps:
 rd = range(eberg_spc@predicted@data[,1], na.rm=TRUE)
 sq = seq(rd[1], rd[2], length.out=48)

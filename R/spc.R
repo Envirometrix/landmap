@@ -17,6 +17,7 @@
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
 #'
 #' @examples
+#' if(requireNamespace("plotKML")){
 #' library(sp)
 #' library(plotKML)
 #' pal = rev(rainbow(65)[1:48])
@@ -26,7 +27,6 @@
 #' formulaString <- ~ PRMGEO6+DEMSRT6+TWISRT6+TIRAST6
 #' eberg_spc <- spc(eberg_grid, formulaString)
 #' names(eberg_spc@predicted) # 11 components on the end;
-#' \donttest{
 #' ## plot maps:
 #' rd = range(eberg_spc@predicted@data[,1], na.rm=TRUE)
 #' sq = seq(rd[1], rd[2], length.out=48)

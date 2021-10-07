@@ -34,6 +34,7 @@ A fuzzy kmeans model
 Runs supervised fuzzy \emph{k}-means (Hengl et al., 2004; \doi{10.1080/13658810310001620924}) using a list of covariates layers provided as \code{"SpatialPixelsDataFrame-class"} object. If class centres and variances are not provided, it first fits a multinomial logistic regression model (\code{spmultinom}), then predicts the class centers and variances based on the output from the \code{nnet::multinom}.
 }
 \examples{
+if(requireNamespace("plotKML")){
 library(plotKML)
 library(sp)
 library(nnet)
@@ -50,7 +51,6 @@ eberg_spc <- spc(eberg_grid, ~PRMGEO6+DEMSRT6+TWISRT6+TIRAST6)
 # predict memberships:
 formulaString = soiltype ~ PC1+PC2+PC3+PC4+PC5+PC6+PC7+PC8+PC9+PC10
 eberg_sm <- spfkm(formulaString, eberg, eberg_spc@predicted)
-\donttest{
 # plot memberships:
   pal = seq(0, 1, 1/50)
   spplot(eberg_sm@mu, col.regions=grey(rev(pal)))

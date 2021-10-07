@@ -50,7 +50,7 @@ setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file
     if(tmp.file==TRUE){
       outname <- tempfile()
     } else {
-      outname <- paste(plotKML::normalizeFilename(deparse(substitute(x, env = parent.frame()))), j, sep="_")
+      outname <- paste(.normalizeFilename(deparse(substitute(x, env = parent.frame()))), j, sep="_")
     }
     try(system(paste(program, utils::shortPathName(normalizePath(raster::filename(x))), RSAGA::set.file.extension(outname, ".tif"), '-te',  y[j,1], y[j,2], y[j,3], y[j,4]), show.output.on.console = show.output.on.console))
     try(x.lst[[j]] <- raster::raster(RSAGA::set.file.extension(outname, ".tif")))
@@ -110,7 +110,7 @@ setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file
   if(tmp.file==TRUE){
     tf <- tempfile()
   } else {
-    tf <- plotKML::normalizeFilename(deparse(substitute(x, env = parent.frame())))
+    tf <- .normalizeFilename(deparse(substitute(x, env = parent.frame())))
   }
   suppressMessages( rgdal::writeOGR(x, RSAGA::set.file.extension(tf, ".shp"), layer=".", driver="ESRI Shapefile", overwrite_layer=TRUE) )
 
@@ -121,7 +121,7 @@ setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file
     if(tmp.file==TRUE){
       outname <- tempfile()
     } else {
-      outname <- paste(plotKML::normalizeFilename(deparse(substitute(x, env = parent.frame()))), j, sep="_")
+      outname <- paste(.normalizeFilename(deparse(substitute(x, env = parent.frame()))), j, sep="_")
     }
     layername <- basename(sub("[.][^.]*$", "", outname, perl=TRUE))
 
@@ -161,6 +161,26 @@ setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file
     program = utility
   }
   return(program)
+}
+
+.normalizeFilename <- function(x, form = c("default", "8.3")[1], fix.encoding = TRUE, sub.sign = "_"){
+
+  # reserved characters:
+  sel = c("<", ">", ":", '\\"', "/", "\\|", "\\?", "\\*", "[[:space:]]", "\\s+$", "\\[", "\\]")
+  for(i in sel){
+    x <- gsub(pattern=i, replacement=sub.sign, x)
+  }
+  # shorten the path:
+  if(form == "8.3"){
+    if(.Platform$OS.type == "windows") {
+      x <- utils::shortPathName(x)
+    }
+  }
+  if(fix.encoding==TRUE){
+    x <- iconv(x, to = "UTF8")
+  }
+
+  return(x)
 }
 
 setMethod("tile", signature(x = "SpatialPointsDataFrame"), .subsetTiles)

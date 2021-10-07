@@ -26,7 +26,7 @@
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
 #'
 #' @examples
-#' \donttest{
+#' if(requireNamespace("plotKML")){
 #' library(plotKML)
 #' library(maxlike)
 #' library(spatstat)

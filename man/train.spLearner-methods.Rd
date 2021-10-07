@@ -102,10 +102,12 @@ library(mlr)
 demo(meuse, echo=FALSE)
 ## Regression:
 sl = c("regr.rpart", "regr.nnet", "regr.glm")
-system.time( m <- train.spLearner(meuse["lead"], covariates=meuse.grid[,c("dist","ffreq")],
-      lambda=0, parallel=FALSE, SL.library=sl) )
+system.time( m <- train.spLearner(meuse["lead"],
+      covariates=meuse.grid[,c("dist","ffreq")],
+      method = "average", oblique.coords = FALSE, lambda=0,
+      parallel=FALSE, SL.library=sl) )
 summary(m@spModel$learner.model$super.model$learner.model)
-\donttest{
+\dontrun{
 library(plotKML)
 ## regression-matrix:
 str(m@vgmModel$observations@data)
