@@ -200,6 +200,8 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' @examples
 #' library(rgdal)
 #' library(mlr)
+#' library(rpart)
+#' library(nnet)
 #' demo(meuse, echo=FALSE)
 #' ## Regression:
 #' sl = c("regr.rpart", "regr.nnet", "regr.glm")

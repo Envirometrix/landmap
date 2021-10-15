@@ -80,7 +80,7 @@ sites <- spTransform(sites, CRS("+init=epsg:28355"))
 ## plot points and grids:
 pnts <- list("sp.points", sites, pch="+", col="black")
 ## load the 250 m grids:
-library(RCurl)
+if(requireNamespace("RCurl")){
 rep = "https://raw.github.com/Envirometrix/PredictiveSoilMapping/master/extdata/"
 x = tempfile(fileext = ".rda")
 wget.check = Sys.which("wget")
@@ -99,6 +99,7 @@ if(!wget.check==""){
   gridded(edgeroi.grids100) <- ~x+y
   proj4string(edgeroi.grids100) <- CRS("+init=epsg:28355")
   spplot(edgeroi.grids100["TI1LAN6"], sp.layout=pnts)
+}
 }
 }
 }

@@ -17,7 +17,7 @@
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
 #'
 #' @examples
-#' if(requireNamespace("plotKML")){
+#' if(requireNamespace("plotKML", quietly = TRUE)){
 #' library(sp)
 #' library(plotKML)
 #' pal = rev(rainbow(65)[1:48])

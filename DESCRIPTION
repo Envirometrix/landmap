@@ -17,14 +17,25 @@ Imports:
     utils,
     parallel,
     matrixStats,
-    glmnet,
     mlr,
     parallelMap,
     sp,
+    geoR,
+    plyr,
     rgdal,
     gdalUtils,
-    raster
-Suggests: ranger, forestError, boot, nabor, meteo, geoR, ParamHelpers, mda, psych, spdep, fossil, xgboost, plyr, kernlab, nnet, rjson, spatstat, spatstat.core, maptools, maxlike, RCurl, deepnet, RSAGA, plotKML
+    raster,
+    ranger,
+    rpart,
+    forestError,
+    nnet,
+    xgboost,
+    kernlab,
+    glmnet,
+    ParamHelpers,
+    spdep,
+    maptools
+Suggests: boot, nabor, meteo, mda, psych, fossil, rjson, spatstat, spatstat.core, maxlike, RCurl, deepnet, RSAGA, plotKML
 RoxygenNote: 7.1.1
 SystemRequirements: C++11, GDAL (>= 2.0.1), GEOS (>= 3.4.0),
     PROJ (>= 4.8.0)

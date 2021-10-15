@@ -26,7 +26,9 @@
 #' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
 #'
 #' @examples
-#' if(requireNamespace("plotKML")){
+#' if(requireNamespace("plotKML", quietly = TRUE) &
+#'    requireNamespace("maxlike", quietly = TRUE) &
+#'    requireNamespace("spatstat", quietly = TRUE) ){
 #' library(plotKML)
 #' library(maxlike)
 #' library(spatstat)
@@ -44,7 +46,7 @@
 #' ## convert to continuous independent covariates:
 #' formulaString <- ~ PRMGEO6+DEMSRT6+TWISRT6+TIRAST6
 #' eberg_spc <- spc(eberg_grid, formulaString)
-#'
+#' \dontrun{
 #' ## derive occurrence probability:
 #' covs <- eberg_spc@predicted[1:8]
 #' iprob <- spsample.prob(eberg.xy, covs)
@@ -81,6 +83,7 @@
 #' m0 <- lm(fs, eberg.xy)
 #' summary(m)$adj.r.squared
 #' summary(m0)$adj.r.squared
+#' }
 #' }
 setMethod("spsample.prob", signature(observations = "SpatialPoints", covariates = "SpatialPixelsDataFrame"), function(observations, covariates, quant.nndist=.95, n.sigma, ...){
 

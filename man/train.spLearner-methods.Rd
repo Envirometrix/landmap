@@ -99,12 +99,14 @@ Optionally, the quantreg (Quantile Regression) option from the ranger package (\
 \examples{
 library(rgdal)
 library(mlr)
+library(rpart)
+library(nnet)
 demo(meuse, echo=FALSE)
 ## Regression:
 sl = c("regr.rpart", "regr.nnet", "regr.glm")
 system.time( m <- train.spLearner(meuse["lead"],
       covariates=meuse.grid[,c("dist","ffreq")],
-      method = "average", oblique.coords = FALSE, lambda=0,
+      oblique.coords = FALSE, lambda=0,
       parallel=FALSE, SL.library=sl) )
 summary(m@spModel$learner.model$super.model$learner.model)
 \dontrun{

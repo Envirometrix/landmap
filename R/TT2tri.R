@@ -17,8 +17,7 @@
 #' @export
 #'
 #' @examples
-#' #library(soiltexture)
-#' library(plyr)
+#' library("plyr")
 #' ## convert textures by hand to sand, silt and clay:
 #' TEXMHT <- c("CL","C","SiL","SiL","missing")
 #' x <- TT2tri(TEXMHT)

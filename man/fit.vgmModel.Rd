@@ -61,8 +61,8 @@ Models need to be in the form \code{zinc ~ dist} and only numeric variables are 
 Often reports \code{Singular matrix. Covariates may have different orders of magnitude.} if the covariates are perfectly aligned.
 }
 \examples{
+library("geoR")
 library(rgdal)
-library(geoR)
 demo(meuse, echo=FALSE)
 vgm = fit.vgmModel(zinc~dist, as.data.frame(meuse), meuse.grid["dist"], lambda=1)
 plot(variog(vgm$geodata))

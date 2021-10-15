@@ -27,7 +27,7 @@ Combines the \code{stats::prcomp} method and predicts a list principal component
 This method assumes that the input covariates are cross-correlated and hence their overlap can be reduced. The input variables are scaled by default and the missing values will be replaced with 0 values to reduce loss of data due to missing pixels.
 }
 \examples{
-if(requireNamespace("plotKML")){
+if(requireNamespace("plotKML", quietly = TRUE)){
 library(sp)
 library(plotKML)
 pal = rev(rainbow(65)[1:48])
