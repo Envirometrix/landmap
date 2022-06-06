@@ -66,7 +66,6 @@ significantly higher prediction speed and accuracy.
 \donttest{
 library(mlr)
 library(ParamHelpers)
-library(geoR)
 library(xgboost)
 library(kernlab)
 library(ranger)

@@ -45,7 +45,7 @@ train.spLearner.matrix(
 
 \item{subsets}{Number of subsets for repeated CV,}
 
-\item{lambda}{Target variable transformation for geoR (0.5 or 1),}
+\item{lambda}{Target variable transformation lambda (0.5 or 1),}
 
 \item{cov.model}{Covariance model for variogram fitting,}
 

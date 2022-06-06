@@ -10,7 +10,7 @@
 #' @param predict.type Prediction type 'prob' or 'response',
 #' @param super.learner Ensemble stacking model usually \code{regr.lm},
 #' @param subsets Number of subsets for repeated CV,
-#' @param lambda Target variable transformation for geoR (0.5 or 1),
+#' @param lambda Target variable transformation lambda (0.5 or 1),
 #' @param cov.model Covariance model for variogram fitting,
 #' @param subsample For large datasets consider random subsetting training data,
 #' @param parallel Initiate parellel processing,
@@ -51,36 +51,16 @@ train.spLearner.matrix <- function(observations, formulaString, covariates, SL.l
   }
   if(is.numeric(Y)){
     if(missing(super.learner)){ super.learner <- "regr.lm" }
-    ## variogram fitting:
-    if(lambda==1){
-      ini.var <- stats::var(log1p(Y), na.rm = TRUE)
-    }
-    if(lambda==0.5){
-      ini.var <- stats::var(Y, na.rm = TRUE)
-    }
-    ## strip buffer distances from vgm modeling
-    rm.n = unlist(sapply(c("rX_*$","rY_*$","layer.*$"), function(i){grep(pattern=utils::glob2rx(i), names(covariates))}))
-    if(length(rm.n)>0){
-      covs.vgm <- names(covariates)[-rm.n]
-    } else {
-      covs.vgm <- names(covariates)
-    }
-    formulaString.vgm <- stats::as.formula(paste(tv, "~", paste(covs.vgm, collapse="+")))
-    suppressWarnings( rvgm <- fit.vgmModel(formulaString.vgm, rmatrix = observations, predictionDomain = covariates[covs.vgm], lambda = lambda, ini.var = ini.var, cov.model = cov.model, subsample = subsample) )
   } else {
-    message("Skipping variogram modeling...", immediate. = TRUE)
     if(missing(super.learner)){ super.learner <- "classif.glmnet" }
-    points <- observations
-    sp::coordinates(points) <- stats::as.formula(paste("~", paste(xyn, collapse = "+"), sep=""))
-    sp::proj4string(points) <- covariates@proj4string
-    rvgm <- list(vgm=list(practicalRange=NA, cov.model="nugget", lambda=NA), observations=points)
   }
+  points <- observations
+  sp::coordinates(points) <- stats::as.formula(paste("~", paste(xyn, collapse = "+"), sep=""))
+  sp::proj4string(points) <- covariates@proj4string
+  rvgm <- list(vgm=list(practicalRange=NA, cov.model="nugget", lambda=NA), observations=points)
   if(missing(cell.size)){
     ## automatically determine cell.size using fitted range
-    cell.size <- rvgm$vgm$practicalRange/2
-    if(is.na(cell.size) | cell.size < (covariates@grid@cellsize[[1]]*2)){
-      cell.size <- abs(diff(covariates@bbox[1,]))/20
-    }
+    cell.size <- abs(diff(covariates@bbox[1,]))/40
   }
   ## spatial ID for CV:
   if(is.null(id)){
