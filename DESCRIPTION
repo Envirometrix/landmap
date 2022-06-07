@@ -22,7 +22,6 @@ Imports:
     sp,
     plyr,
     rgdal,
-    gdalUtils,
     raster,
     ranger,
     rpart,

@@ -139,17 +139,6 @@ setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file
 
 .programPath <- function(path, utility){
   if(missing(path)){
-    if(!file.exists("C:/PROGRA~1/GDAL/")&.Platform$OS.type == "windows"){
-      if(requireNamespace("gdalUtils", quietly = TRUE)){
-        path <- getOption("gdalUtils_gdalPath")[[1]]$path
-        if(is.null(path)){
-          ## force gdal installation:
-          gdalUtils::gdal_setInstallation()
-          message("Forcing installation of GDAL utilities... this might take time.")
-          path <- getOption("gdalUtils_gdalPath")[[1]]$path
-        }
-      }
-    }
     if(file.exists(paste0("C:/PROGRA~1/GDAL/", utility, ".exe"))&.Platform$OS.type == "windows"){
       program = shQuote(utils::shortPathName(normalizePath(file.path("C:/PROGRA~1/GDAL/", paste0(utility, ".exe")))))
     }
