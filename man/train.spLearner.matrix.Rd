@@ -71,5 +71,5 @@ Train a spatial prediction and/or interpolation model using Ensemble Machine Lea
 from a regression/classification matrix
 }
 \author{
-\href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+\href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 }

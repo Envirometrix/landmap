@@ -59,5 +59,5 @@ pix.lst <- tile(meuse.grid, block.x=1000)
 }
 }
 \author{
-\href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+\href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 }

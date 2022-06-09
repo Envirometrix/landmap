@@ -36,5 +36,5 @@ A regular tiling system
 Make a tiling system from a bounding box
 }
 \author{
-\href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+\href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 }

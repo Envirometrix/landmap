@@ -15,7 +15,7 @@
 #' @return object of class \code{SpatialPixelsDataFrame} with distances to points
 #' @export
 #'
-#' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#' @author \href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 #'
 #' @references
 #' \itemize{

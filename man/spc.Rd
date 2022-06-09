@@ -44,5 +44,5 @@ spplot(eberg_spc@predicted[1:4], at=sq, col.regions=pal)
 }
 }
 \author{
-\href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+\href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 }

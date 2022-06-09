@@ -14,7 +14,7 @@
 #'
 #' @note This method assumes that the input covariates are cross-correlated and hence their overlap can be reduced. The input variables are scaled by default and the missing values will be replaced with 0 values to reduce loss of data due to missing pixels.
 #'
-#' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#' @author \href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 #'
 #' @examples
 #' if(requireNamespace("plotKML", quietly = TRUE)){

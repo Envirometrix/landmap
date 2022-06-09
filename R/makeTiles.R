@@ -11,7 +11,7 @@
 #' @return A regular tiling system
 #' @export
 #'
-#' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#' @author \href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 makeTiles <- function(bb, block.x, block.y, overlap.percent, limit.bbox, columns = NULL, rows = NULL){
 
   ## number of tiles:

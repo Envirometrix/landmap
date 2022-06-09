@@ -13,7 +13,7 @@
 #' @return List of object result of clipping
 #' @export
 #'
-#' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#' @author \href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 #'
 #' @examples
 #' library(sp)
@@ -77,7 +77,7 @@ setMethod("getSpatialTiles", signature(obj = "Spatial"), function(obj, block.x, 
 #' @export
 setMethod("getSpatialTiles", signature(obj = "ANY"), function(obj, block.x, block.y = block.x, overlap.percent = 0, limit.bbox = TRUE, return.SpatialPolygons = FALSE){
 
-  if(!class(obj)=="GDALobj"){
+  if(!methods::is(obj, "GDALobj")){
     stop("Object of class \"GDALobj\" required.")
   }
 

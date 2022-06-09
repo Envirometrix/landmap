@@ -25,7 +25,7 @@
 #'
 #' @return Regular tiling system
 #'
-#' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#' @author \href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 #' @export
 #' @docType methods
 setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file = TRUE, program, show.output.on.console = FALSE, ...){
@@ -125,11 +125,11 @@ setMethod("tile", signature(x = "RasterLayer"), function(x, y, block.x, tmp.file
     }
     layername <- basename(sub("[.][^.]*$", "", outname, perl=TRUE))
 
-    if(class(x)=="SpatialPolygonsDataFrame"){
+    if(methods::is(x, "SpatialPolygonsDataFrame")){
       try(system(paste(program, '-where \"OGR_GEOMETRY=\'Polygon\'\" -f \"ESRI Shapefile\"', RSAGA::set.file.extension(outname, ".shp"), RSAGA::set.file.extension(tf, ".shp"), '-clipsrc',  y[j,1], y[j,2], y[j,3], y[j,4], '-skipfailures'), show.output.on.console = show.output.on.console))
       try(x.lst[[j]] <- rgdal::readOGR(normalizePath(RSAGA::set.file.extension(outname, ".shp")), layername, verbose = FALSE))
     }
-    if(class(x)=="SpatialLinesDataFrame"){
+    if(methods::is(x, "SpatialLinesDataFrame")){
       try(system(paste(program, '-where \"OGR_GEOMETRY=\'Linestring\'\" -f \"ESRI Shapefile\"', RSAGA::set.file.extension(outname, ".shp"), RSAGA::set.file.extension(tf, ".shp"), '-clipsrc',  y[j,1], y[j,2], y[j,3], y[j,4], '-skipfailures'), show.output.on.console = show.output.on.console))
       try(x.lst[[j]] <- rgdal::readOGR(normalizePath(RSAGA::set.file.extension(outname, ".shp")), layername, verbose = FALSE))
     }

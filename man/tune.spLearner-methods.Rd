@@ -83,5 +83,5 @@ if(!class(t) == "try-error") summary(m0@spModel$learner.model$super.model$learne
 }
 }
 \author{
-\href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+\href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 }

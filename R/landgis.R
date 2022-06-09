@@ -11,7 +11,7 @@
 #' @return Locally downloaded GeoTIFF.
 #' @export
 #'
-#' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#' @author \href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 #'
 #' @examples
 #' search.landgis(pattern=c("clay", "10..10cm"))
@@ -23,7 +23,7 @@ download.landgis <- function(coverageId, filename, scalefactor=NULL, subset=NULL
   wcs.url <- paste0(service, '&request=GetCoverage&coverageId=', coverageId, subset, scalefactor)
   x <- utils::download.file(wcs.url, filename, quiet = silent, ...)
   try( obj <- rgdal::GDALinfo(filename, silent = silent) )
-  if(!class(obj)=="GDALobj"){
+  if(!methods::is(obj, "GDALobj")){
     ## download from zenodo?
     x <- search.landgis(strsplit(coverageId, ":")[[1]][2])
     warning(paste("WCS request exceed memory limitations. Try downloading from zenodo:\n", x[[2]]))

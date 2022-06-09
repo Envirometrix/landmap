@@ -18,7 +18,7 @@
 #'
 #' @return optimized object of type spLearner
 #'
-#' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#' @author \href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 #'
 #' @note Currently requires that two base learners are \code{regr.ranger} and
 #' \code{regr.xgboost}, and that there are at least 3 base learners in total.

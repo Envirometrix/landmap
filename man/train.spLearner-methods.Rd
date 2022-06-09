@@ -227,5 +227,5 @@ while (!is.null(dev.list())) dev.off()
 }
 }
 \author{
-\href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+\href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 }

@@ -48,5 +48,5 @@ b <- buffer.dist(meuse["zinc"], meuse.grid[1],
 }
 }
 \author{
-\href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+\href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 }

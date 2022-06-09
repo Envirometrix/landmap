@@ -57,5 +57,5 @@ eberg_sm <- spfkm(formulaString, eberg, eberg_spc@predicted)
 }
 }
 \author{
-\href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+\href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 }

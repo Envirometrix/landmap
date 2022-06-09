@@ -23,7 +23,7 @@
 #' @return Object of class \code{spLearner}
 #' @export
 #'
-#' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#' @author \href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 train.spLearner.matrix <- function(observations, formulaString, covariates, SL.library, family = stats::gaussian(), method = "stack.cv", predict.type, super.learner, subsets = 5, lambda = 0.5, cov.model = "exponential", subsample = 10000, parallel = "multicore", cell.size, id = NULL, weights = NULL, quantreg = TRUE, ...){
   #if(!.Platform$OS.type=="unix") { parallel <- "seq" }
   tv <- all.vars(formulaString)[1]
@@ -155,7 +155,7 @@ setMethod("train.spLearner", signature(observations = "data.frame", formulaStrin
 #' @return object of class \code{spLearner}, which contains fitted model, variogram model and spatial grid
 #' used for Cross-validation.
 #'
-#' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#' @author \href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 #'
 #' @note By default uses oblique coordinates (rotated coordinates) as described in Moller et al. (2020; \doi{10.5194/soil-6-269-2020}) to account for geographical distribution of values.
 #' By setting the \code{nearest = TRUE}, distances to nearest observations and values of nearest neighbors will be used (see: Sekulic et al, 2020; \doi{10.3390/rs12101687}). This method closely resembles geostatistical interpolators such as kriging.
@@ -580,14 +580,14 @@ setMethod("predict", signature(object = "spLearner"), predict.spLearner)
   rm.dupl = TRUE
 )
 {
-  if (class(locations) == "SpatialPoints" ||
-      class(locations) == "SpatialPointsDataFrame" ||
-      class(locations) == "SpatialPixelsDataFrame") {
+  if (methods::is(locations, "SpatialPoints") ||
+      methods::is(locations, "SpatialPointsDataFrame") ||
+      methods::is(locations, "SpatialPixelsDataFrame") ) {
     locations <- sp::coordinates(locations)
   } else {
     locations <- locations[, locations.x.y]
   }
-  if (class(observations) == "SpatialPoints" || class(observations) == "SpatialPointsDataFrame") {
+  if (methods::is(observations, "SpatialPoints") || methods::is(observations, "SpatialPointsDataFrame")) {
     variable <- observations[[zcol]]
     observations <- sp::coordinates(observations)
   } else {

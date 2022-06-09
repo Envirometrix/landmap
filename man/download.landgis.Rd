@@ -40,5 +40,5 @@ Access and download layers from OpenLandMap.org (LandGIS data service)
 search.landgis(pattern=c("clay", "10..10cm"))
 }
 \author{
-\href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+\href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 }

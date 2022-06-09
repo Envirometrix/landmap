@@ -1,6 +1,6 @@
 
 setClass("spLearner", slots = c(spModel = "ANY", vgmModel = "list", covariates = "SpatialPixelsDataFrame", spID = "SpatialGridDataFrame", quantregModel = "ANY"), validity = function(object) {
-    if(!class(object@vgmModel$observations)=="SpatialPointsDataFrame")
+    if(!methods::is(object@vgmModel$observations, "SpatialPointsDataFrame"))
       return("Expecting an object of class 'SpatialPointsDataFrame'")
     cn = c("cov.model", "lambda", "practicalRange")
     if(!all(cn %in% names(object@vgmModel$vgm))){

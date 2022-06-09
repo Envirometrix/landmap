@@ -15,7 +15,7 @@
 #' @return A fuzzy kmeans model
 #' @export
 #'
-#' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#' @author \href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 #'
 #' @examples
 #' if(requireNamespace("plotKML")){
@@ -60,8 +60,8 @@ setMethod("spfkm", signature(formulaString = "formula", observations = "SpatialP
   ## if available, use class centres:
   check_tc <- !is.null(class.c)&!is.null(class.sd)
   if(check_tc){
-    if(!class(class.c)=="matrix"){ stop("Object of type 'matrix' with column names for covariates and row names correspodning to the class names required") }
-    if(!class(class.sd)=="matrix"){ stop("Object of type 'matrix' with column names for covariates and row names correspodning to the class names required") }
+    if(!methods::is(class.c, "matrix")){ stop("Object of type 'matrix' with column names for covariates and row names correspodning to the class names required") }
+    if(!methods::is(class.sd, "matrix")){ stop("Object of type 'matrix' with column names for covariates and row names correspodning to the class names required") }
     mout = list(NULL)
   }
   ## otherwise, estimate class centres using the multinomial logistic regression:

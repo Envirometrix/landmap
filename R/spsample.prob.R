@@ -23,7 +23,7 @@
 #'   \item Royle, J.A., Chandler, R.B., Yackulic, C. and J. D. Nichols. (2012) Likelihood analysis of species occurrence probability from presence-only data for modelling species distributions. Methods in Ecology and Evolution. \doi{10.1111/j.2041-210X.2011.00182.x}
 #' }
 #'
-#' @author \href{https://opengeohub.org/people/tom-hengl}{Tom Hengl}
+#' @author \href{https://opengeohub.org/people/tom-hengl/}{Tom Hengl}
 #'
 #' @examples
 #' if(requireNamespace("plotKML", quietly = TRUE) &
